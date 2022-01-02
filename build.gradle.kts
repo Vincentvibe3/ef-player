@@ -5,7 +5,7 @@ plugins {
     `maven-publish`
 }
 
-group = "io.github.vincentvibe3"
+group = "com.github.Vincentvibe3"
 version = "0.1-alpha"
 
 repositories {
@@ -14,6 +14,8 @@ repositories {
 
 dependencies {
     testImplementation(kotlin("test"))
+    implementation("io.ktor:ktor-client-core:1.6.6")
+    implementation("io.ktor:ktor-client-cio:1.6.6")
 }
 
 tasks.test {

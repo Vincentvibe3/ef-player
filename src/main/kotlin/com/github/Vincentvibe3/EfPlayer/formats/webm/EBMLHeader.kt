@@ -1,7 +1,7 @@
-package io.github.vincentvibe3.EfPlayer.formats.webm
+package com.github.Vincentvibe3.EfPlayer.formats.webm
 
-import io.github.vincentvibe3.EfPlayer.formats.webm.WebmDocument.Companion.checkIsEBML
-import io.github.vincentvibe3.EfPlayer.formats.webm.WebmDocument.Companion.readVINTData
+import com.github.Vincentvibe3.EfPlayer.formats.webm.WebmDocument.Companion.checkIsEBML
+import com.github.Vincentvibe3.EfPlayer.formats.webm.WebmDocument.Companion.readVINTData
 import java.io.InputStream
 import java.nio.ByteBuffer
 import kotlin.properties.Delegates

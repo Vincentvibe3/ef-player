@@ -1,4 +1,4 @@
-package io.github.vincentvibe3.EfPlayer.formats.webm
+package com.github.Vincentvibe3.EfPlayer.formats.webm
 
 class SeekHead {
 
