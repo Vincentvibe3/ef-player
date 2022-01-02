@@ -9,7 +9,14 @@ name: Gradle Package
 
 on:
   release:
-    types: [released]
+    types: [created]
+  push:
+    tags:
+      - 'v.*'
+  pull_request:
+    tags:
+      - 'v.*'
+  workflow_dispatch:
 
 jobs:
   build:
