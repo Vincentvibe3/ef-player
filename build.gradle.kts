@@ -5,7 +5,7 @@ plugins {
     `maven-publish`
 }
 
-group = "io.github.vincentvibe3.EfPlayer"
+group = "io.github.vincentvibe3"
 version = "1.0"
 
 repositories {

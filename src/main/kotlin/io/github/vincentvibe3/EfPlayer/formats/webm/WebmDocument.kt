@@ -1,15 +1,14 @@
-package io.github.vincentvibe3.webm
+package io.github.vincentvibe3.EfPlayer.formats.webm
 
 import java.io.InputStream
 import java.nio.ByteBuffer
 import java.util.*
-import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
 import kotlin.experimental.and
 
 class WebmDocument {
 
-    lateinit var header:EBMLHeader;
+    lateinit var header: EBMLHeader;
     val audioData: ByteArray? = null
     var currentChunk:Long = 0
 

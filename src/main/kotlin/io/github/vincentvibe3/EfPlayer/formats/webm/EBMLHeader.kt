@@ -1,7 +1,7 @@
-package io.github.vincentvibe3.webm
+package io.github.vincentvibe3.EfPlayer.formats.webm
 
-import io.github.vincentvibe3.webm.WebmDocument.Companion.checkIsEBML
-import io.github.vincentvibe3.webm.WebmDocument.Companion.readVINTData
+import io.github.vincentvibe3.EfPlayer.formats.webm.WebmDocument.Companion.checkIsEBML
+import io.github.vincentvibe3.EfPlayer.formats.webm.WebmDocument.Companion.readVINTData
 import java.io.InputStream
 import java.nio.ByteBuffer
 import kotlin.properties.Delegates
@@ -124,7 +124,8 @@ class EBMLHeader {
                     DOCTYPEREADVERSION -> {
                         readDocTypeReadVer(input)
                     }
-                    else -> {throw InvalidIdException()}
+                    else -> {throw InvalidIdException()
+                    }
                 }
                 leftToRead-=bytesRead
                 if (leftToRead==0L){

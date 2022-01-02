@@ -1,3 +1,3 @@
 
-rootProject.name = "webmreader"
+rootProject.name = "EfPlayer"
 

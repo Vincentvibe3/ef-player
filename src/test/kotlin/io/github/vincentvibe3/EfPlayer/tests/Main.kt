@@ -1,10 +1,9 @@
-package io.github.vincentvibe3.webm.tests
+package io.github.vincentvibe3.EfPlayer.tests
 
-import io.github.vincentvibe3.webm.EBMLHeader
-import io.github.vincentvibe3.webm.Main
-import io.github.vincentvibe3.webm.WebmDocument
+import io.github.vincentvibe3.EfPlayer.formats.webm.EBMLHeader
+import io.github.vincentvibe3.EfPlayer.formats.webm.Main
+import io.github.vincentvibe3.EfPlayer.formats.webm.WebmDocument
 import java.io.ByteArrayInputStream
-import java.io.InputStream
 import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.test.Test
