@@ -1,3 +1,3 @@
 
-rootProject.name = "EfPlayer"
+rootProject.name = "efplayer"
 
