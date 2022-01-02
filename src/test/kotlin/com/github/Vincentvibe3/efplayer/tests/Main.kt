@@ -1,10 +1,8 @@
-package com.github.Vincentvibe3.EfPlayer.tests
+package com.github.Vincentvibe3.efplayer.tests
 
-import com.github.Vincentvibe3.EfPlayer.core.Stream
-import com.github.Vincentvibe3.EfPlayer.formats.webm.EBMLHeader
-import com.github.Vincentvibe3.EfPlayer.formats.webm.Main
-import com.github.Vincentvibe3.EfPlayer.formats.webm.WebmDocument
-import kotlinx.coroutines.runBlocking
+import com.github.Vincentvibe3.efplayer.formats.webm.EBMLHeader
+import com.github.Vincentvibe3.efplayer.formats.webm.Main
+import com.github.Vincentvibe3.efplayer.formats.webm.WebmDocument
 import java.io.ByteArrayInputStream
 import java.nio.file.Files
 import java.nio.file.Path
