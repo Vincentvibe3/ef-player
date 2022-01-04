@@ -62,7 +62,7 @@ class Stream(val url: String, val track:Track):Runnable {
                     val bytes = httpResponse.readBytes(canStream)
                     offset += canStream
                     data.write(bytes)
-//                    println("Download in progress, offset: ${offset}, current read ${canStream} / ${contentLength}")
+                    println("Download in progress, offset: ${offset}, current read ${canStream} / ${contentLength}")
                 } while (offset < contentLength!!)
             }
 

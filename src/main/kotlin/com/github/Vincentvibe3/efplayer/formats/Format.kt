@@ -9,7 +9,7 @@ interface Format {
 
     val MINIMUM_BYTES_NEEDED:Long
 
-    suspend fun processNextBlock(streamingDataOut: LinkedBlockingDeque<Byte>):Result<Long>
+    suspend fun processNextBlock(streamingDataOut: LinkedBlockingDeque<Byte>)
 
     fun LinkedBlockingDeque<Byte>.read(i:Int):ByteArray {
         val array = ByteArray(i)

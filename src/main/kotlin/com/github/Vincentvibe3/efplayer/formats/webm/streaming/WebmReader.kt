@@ -1,5 +1,6 @@
 package com.github.Vincentvibe3.efplayer.formats.webm.streaming
 
+import com.github.Vincentvibe3.efplayer.core.MissingDataException
 import com.github.Vincentvibe3.efplayer.core.Result
 import com.github.Vincentvibe3.efplayer.core.Track
 import com.github.Vincentvibe3.efplayer.formats.Format
@@ -79,7 +80,7 @@ class WebmReader(val track: Track):Format {
         conversionByteBuffer.clear()
         val id = conversionByteBuffer.put(bytes).flip().int
         conversionByteBuffer.clear()
-        println(id)
+        println("$id id")
         when (id){
             IDS.CLUSTER.id -> {
                 currentBlock = STEPS.CLUSTER
@@ -96,17 +97,20 @@ class WebmReader(val track: Track):Format {
 
     private suspend fun getSize(data: LinkedBlockingDeque<Byte>){
         val result = readVINTData(data)
-        currentBlockLeft = result.value
+        if (currentBlock == STEPS.CHECK_SEGMENT){
+            currentBlockLeft = -1
+        } else {
+            currentBlockLeft = result.value
+        }
         currentStep = currentBlock
     }
 
     suspend fun readCluster(data: LinkedBlockingDeque<Byte>){
         var timestamp: Int? = null
-        while (currentBlockLeft>0 || data.size>9){
-//            println(data)
+        while (currentBlockLeft>0 && data.size>9){
+//            println("data $data")
 //            println(data.size>9)
             val idBytes = data.read(1)
-            currentBlockLeft -= 1
             conversionByteBuffer.clear()
             val id = conversionByteBuffer.put(byteArrayOf(0, 0, 0, idBytes[0])).flip().int
             conversionByteBuffer.clear()
@@ -124,8 +128,9 @@ class WebmReader(val track: Track):Format {
                 }
                 data.putFirst(idBytes[0])
 //                println(data)
-                break
+                throw MissingDataException()
             }
+            currentBlockLeft -= 1
             val bytesRead = when (id){
                 0xe7 -> {
                     println("at timestamp")
@@ -166,13 +171,18 @@ class WebmReader(val track: Track):Format {
                 }
                 else -> {
                     println("error")
+                    println(data)
                     elementSize.value+elementSize.bytesRead
                 }
             }
             currentBlockLeft-=bytesRead
+//            if(currentBlockLeft==0L){
+//                println("cluster done")
+//            }
         }
         if (currentBlockLeft==0L){
             currentBlockLeft = -1
+            currentStep = STEPS.GET_ID
         }
     }
 
@@ -187,8 +197,12 @@ class WebmReader(val track: Track):Format {
         currentStep = STEPS.GET_ID
     }
 
-    override suspend fun processNextBlock(data: LinkedBlockingDeque<Byte>): Result<Long> {
+    override suspend fun processNextBlock(data: LinkedBlockingDeque<Byte>) {
+        println("processing")
+
         while (data.size>MINIMUM_BYTES_NEEDED){
+            println(currentBlockLeft)
+            println(data.size)
             when (currentStep){
                 STEPS.GET_ID -> {
                     println("getting ID")
@@ -204,7 +218,13 @@ class WebmReader(val track: Track):Format {
                 STEPS.INFO -> {}
                 STEPS.TRACKS -> {}
                 STEPS.CHAPTERS -> {}
-                STEPS.CLUSTER -> {readCluster(data)}
+                STEPS.CLUSTER -> {
+                    try{
+                        readCluster(data)
+                    } catch (e:MissingDataException) {
+                        break
+                    }
+                }
                 STEPS.CUES -> {}
                 STEPS.ATTACHMENTS -> {}
                 STEPS.TAGS -> {}
@@ -213,7 +233,6 @@ class WebmReader(val track: Track):Format {
                 }
             }
         }
-        return Result(2,2)
     }
 
 
