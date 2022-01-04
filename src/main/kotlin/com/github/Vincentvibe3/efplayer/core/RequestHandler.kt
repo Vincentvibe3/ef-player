@@ -51,12 +51,16 @@ object RequestHandler {
             body = response.readText()
             success = true
         } catch (e:ConnectException){
+            e.printStackTrace()
             success = false
         } catch (e:RedirectResponseException){
+            e.printStackTrace()
             success = false
         } catch (e:ClientRequestException){
+            e.printStackTrace()
             success = false
         } catch (e:ServerResponseException){
+            e.printStackTrace()
             success = false
         }
 
