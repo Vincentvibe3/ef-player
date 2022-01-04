@@ -108,7 +108,7 @@ object Youtube: Extractor() {
             val stdout = proc.inputStream.bufferedReader()
             val stderr = proc.errorStream.bufferedReader()
             runBlocking {
-                out = withTimeoutOrNull(5000L) {
+                out = withTimeoutOrNull(10000L) {
                     var tempOutput = ""
                     while (!stdout.ready()&&!stderr.ready()&&isActive){
 //                        println("waiting")
