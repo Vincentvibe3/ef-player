@@ -55,19 +55,19 @@ object Youtube: Extractor() {
     }
 
     override suspend fun getTrack(url: String):Track?{
-        val response = RequestHandler.get(url)
-        val doc = Jsoup.parse(response)
-        doc.select("script").forEach { script ->
-            if (script.data().startsWith("var ytInitialPlayerResponse = ")) {
-                val json = JSONObject(script.data().removePrefix("var ytInitialPlayerResponse = "))
-                if (json.has("videoDetails")){
-                    val videoDetails = json.getJSONObject("videoDetails")
-                    val title = videoDetails.getString("title")
-                    val duration = videoDetails.getString("lengthSeconds").toLong()
-                    return Track(url, Youtube, title, duration)
-                }
-            }
-        }
+//        val response = RequestHandler.get(url)
+//        val doc = Jsoup.parse(response)
+//        doc.select("script").forEach { script ->
+//            if (script.data().startsWith("var ytInitialPlayerResponse = ")) {
+//                val json = JSONObject(script.data().removePrefix("var ytInitialPlayerResponse = "))
+//                if (json.has("videoDetails")){
+//                    val videoDetails = json.getJSONObject("videoDetails")
+//                    val title = videoDetails.getString("title")
+//                    val duration = videoDetails.getString("lengthSeconds").toLong()
+                    return Track(url, Youtube, "", 0L)
+//                }
+//            }
+//        }
         return null
     }
 
