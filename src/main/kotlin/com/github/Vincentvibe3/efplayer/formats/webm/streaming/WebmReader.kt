@@ -197,7 +197,7 @@ class WebmReader(val track: Track):Format {
 //            println("incomplete read")
 //            println(data.size)
             currentBlockLeft-=data.size
-//            data.skip(data.size)
+            data.skip(data.size)
             throw MissingDataException()
         } else {
             data.skip(currentBlockLeft.toInt())
