@@ -14,12 +14,12 @@ class Player {
         thread.start()
     }
 
-    fun provide(){
-
+    fun provide(): ByteArray {
+        return currentTrack!!.trackChunks.remove()
     }
 
     fun canProvide():Boolean{
-        return true
+        return currentTrack?.trackChunks?.isNotEmpty() ?: false
     }
 
 }

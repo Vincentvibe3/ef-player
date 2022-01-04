@@ -6,19 +6,15 @@ import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.PipedInputStream
 import java.io.PipedOutputStream
+import java.util.concurrent.LinkedBlockingQueue
+import java.util.concurrent.LinkedTransferQueue
 
 class Track(val url:String, val extractor: Extractor, val title:String, val duration:Long) {
 
-    val streamingDataOut = PipedInputStream()
-    val streamingData = PipedOutputStream(streamingDataOut)
-
+    val trackChunks = LinkedBlockingQueue<ByteArray>()
 
     suspend fun getStream():String?{
         return extractor.getStream(url)
-    }
-
-    fun readData(): PipedInputStream {
-        return streamingDataOut
     }
 
 }
