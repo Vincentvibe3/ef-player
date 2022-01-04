@@ -48,8 +48,6 @@ class WebmReader(val track: Track):Format {
     private var currentBlockLeft = -1L
     private var headerParsed = false
     private val conversionByteBuffer: ByteBuffer = ByteBuffer.allocate(8)
-    var addcount = 0
-
     override val MINIMUM_BYTES_NEEDED = 8L
 
     suspend fun readVINTData(source:LinkedBlockingDeque<Byte>): Result<Long> {
@@ -194,8 +192,20 @@ class WebmReader(val track: Track):Format {
 
     fun skip(data: LinkedBlockingDeque<Byte>){
         println("skipping")
-        data.skip(currentBlockLeft.toInt())
-        currentStep = STEPS.GET_ID
+        println(currentBlockLeft)
+        if (currentBlockLeft>data.size){
+//            println("incomplete read")
+//            println(data.size)
+            currentBlockLeft-=data.size
+//            data.skip(data.size)
+            throw MissingDataException()
+        } else {
+            data.skip(currentBlockLeft.toInt())
+//            println("final read")
+//            println(data.size)
+            currentBlockLeft = -1
+            currentStep = STEPS.GET_ID
+        }
     }
 
     suspend fun checkSegment(data: LinkedBlockingDeque<Byte>){
@@ -210,34 +220,34 @@ class WebmReader(val track: Track):Format {
 //            println(currentBlockLeft)
 //            println("${data.size} size")
 //            println(currentStep)
-            when (currentStep){
-                STEPS.GET_ID -> {
-//                    println("getting ID")
-                    getID(data)
-                }
-                STEPS.GET_SIZE -> {
-//                    println("getting size")
-                    getSize(data)
-                }
-                STEPS.CHECK_SEGMENT -> {checkSegment(data)}
-                STEPS.HEADER -> {}
-                STEPS.SEEKHEAD -> {}
-                STEPS.INFO -> {}
-                STEPS.TRACKS -> {}
-                STEPS.CHAPTERS -> {}
-                STEPS.CLUSTER -> {
-                    try{
+            try{
+                when (currentStep){
+                    STEPS.GET_ID -> {
+//                        println("getting ID")
+                        getID(data)
+                    }
+                    STEPS.GET_SIZE -> {
+//                        println("getting size")
+                        getSize(data)
+                    }
+                    STEPS.CHECK_SEGMENT -> {checkSegment(data)}
+                    STEPS.HEADER -> {}
+                    STEPS.SEEKHEAD -> {}
+                    STEPS.INFO -> {}
+                    STEPS.TRACKS -> {}
+                    STEPS.CHAPTERS -> {}
+                    STEPS.CLUSTER -> {
                         readCluster(data)
-                    } catch (e:MissingDataException) {
-                        break
+                    }
+                    STEPS.CUES -> {}
+                    STEPS.ATTACHMENTS -> {}
+                    STEPS.TAGS -> {}
+                    STEPS.SKIP -> {
+                        skip(data)
                     }
                 }
-                STEPS.CUES -> {}
-                STEPS.ATTACHMENTS -> {}
-                STEPS.TAGS -> {}
-                STEPS.SKIP -> {
-                    skip(data)
-                }
+            } catch (e:MissingDataException) {
+                break
             }
         }
     }

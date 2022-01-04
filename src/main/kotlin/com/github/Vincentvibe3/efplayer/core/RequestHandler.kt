@@ -22,12 +22,14 @@ object RequestHandler {
     private val mutex = Mutex()
 
     suspend fun get(originalUrl: String):String{
+        println(originalUrl)
         val host = if (rateLimits.containsKey(originalUrl)){
             originalUrl
         } else {
             try {
                 URI(originalUrl).host
             } catch (e:URISyntaxException){
+                e.printStackTrace()
                 throw RequestFailedException()
             }
         }
@@ -49,16 +51,12 @@ object RequestHandler {
             body = response.readText()
             success = true
         } catch (e:ConnectException){
-            println("ConnectException")
             success = false
         } catch (e:RedirectResponseException){
-            println("RedirectResponseException")
             success = false
         } catch (e:ClientRequestException){
-            println("client request exception")
             success = false
         } catch (e:ServerResponseException){
-            println("server response exception")
             success = false
         }
 
