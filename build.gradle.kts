@@ -6,7 +6,7 @@ plugins {
 }
 
 group = "com.github.Vincentvibe3"
-version = "0.1-alpha"
+version = "1.0"
 
 repositories {
     mavenCentral()
@@ -14,8 +14,8 @@ repositories {
 
 dependencies {
     testImplementation(kotlin("test"))
-    implementation("io.ktor:ktor-client-core:1.6.6")
-    implementation("io.ktor:ktor-client-cio:1.6.6")
+    implementation("io.ktor:ktor-client-core:1.6.7")
+    implementation("io.ktor:ktor-client-cio:1.6.7")
     implementation("org.json:json:20210307")
     implementation ("org.jsoup:jsoup:1.14.3")
 }
