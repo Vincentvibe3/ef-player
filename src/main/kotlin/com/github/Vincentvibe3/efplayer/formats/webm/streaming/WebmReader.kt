@@ -107,7 +107,10 @@ class WebmReader(val track: Track):Format {
 
     suspend fun readCluster(data: LinkedBlockingDeque<Byte>){
         var timestamp: Int? = null
-        while (currentBlockLeft>0 && data.size>9){
+        if (data.size<9){
+            throw MissingDataException()
+        }
+        while (currentBlockLeft>0 && data.size>=9){
 //            println("data $data")
 //            println(data.size>9)
             val idBytes = data.read(1)
@@ -202,7 +205,8 @@ class WebmReader(val track: Track):Format {
 
         while (data.size>MINIMUM_BYTES_NEEDED){
             println(currentBlockLeft)
-            println(data.size)
+            println("${data.size} size")
+            println(currentStep)
             when (currentStep){
                 STEPS.GET_ID -> {
                     println("getting ID")
