@@ -48,6 +48,7 @@ class WebmReader(val track: Track):Format {
     private var currentBlockLeft = -1L
     private var headerParsed = false
     private val conversionByteBuffer: ByteBuffer = ByteBuffer.allocate(8)
+    var addcount = 0
 
     override val MINIMUM_BYTES_NEEDED = 8L
 
@@ -59,7 +60,7 @@ class WebmReader(val track: Track):Format {
         val vint = ByteArray(Long.SIZE_BYTES)
         val bitset = BitSet()
         if (vintWidth>8){
-            println("problem")
+//            println("problem")
         }
         bitset.set(0, Byte.SIZE_BITS - vintWidth)
         val filter = bitset.toByteArray()
@@ -80,7 +81,7 @@ class WebmReader(val track: Track):Format {
         conversionByteBuffer.clear()
         val id = conversionByteBuffer.put(bytes).flip().int
         conversionByteBuffer.clear()
-        println("$id id")
+//        println("$id id")
         when (id){
             IDS.CLUSTER.id -> {
                 currentBlock = STEPS.CLUSTER
@@ -144,7 +145,7 @@ class WebmReader(val track: Track):Format {
                     conversionByteBuffer.clear()
                     timestamp = conversionByteBuffer.put(int).flip().int
                     conversionByteBuffer.clear()
-                    println("$timestamp cluster ts")
+//                    println("$timestamp cluster ts")
                     elementSize.value+elementSize.bytesRead
                 }
                 0xa0 -> {
@@ -161,20 +162,22 @@ class WebmReader(val track: Track):Format {
                     val flags = audioData[3]
                     val keyframe = flags.and(0x80.toByte())
                     val lacing = flags.and(0x06).rotateRight(1)
-                    println("${lacing.toUInt()} lacing")
-                    println(dataTimestamp)
+//                    println("${lacing.toUInt()} lacing")
+//                    println(dataTimestamp)
                     val opus = ByteArray(audioData.size-4)
                     System.arraycopy(audioData, 4, opus, 0, opus.size)
-                    if (timestamp != null) {
-                        val chunk = (timestamp+dataTimestamp)/20
+//                    if (timestamp != null) {
+//                        val chunk = (timestamp+dataTimestamp)/20
                         track.trackChunks.put(opus)
-                    }
+//                        addcount++
+//                        println(addcount)
+//                    }
                     elementSize.value+elementSize.bytesRead
 //                    throw InvalidIdException()
                 }
                 else -> {
                     println("error")
-                    println(data)
+//                    println(data)
                     elementSize.value+elementSize.bytesRead
                 }
             }
@@ -201,19 +204,19 @@ class WebmReader(val track: Track):Format {
     }
 
     override suspend fun processNextBlock(data: LinkedBlockingDeque<Byte>) {
-        println("processing")
+//        println("processing")
 
         while (data.size>MINIMUM_BYTES_NEEDED){
-            println(currentBlockLeft)
-            println("${data.size} size")
-            println(currentStep)
+//            println(currentBlockLeft)
+//            println("${data.size} size")
+//            println(currentStep)
             when (currentStep){
                 STEPS.GET_ID -> {
-                    println("getting ID")
+//                    println("getting ID")
                     getID(data)
                 }
                 STEPS.GET_SIZE -> {
-                    println("getting size")
+//                    println("getting size")
                     getSize(data)
                 }
                 STEPS.CHECK_SEGMENT -> {checkSegment(data)}

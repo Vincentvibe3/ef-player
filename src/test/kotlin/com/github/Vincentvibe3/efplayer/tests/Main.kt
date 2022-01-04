@@ -1,10 +1,13 @@
 package com.github.Vincentvibe3.efplayer.tests
 
+import com.github.Vincentvibe3.efplayer.core.Player
 import com.github.Vincentvibe3.efplayer.core.Track
 import com.github.Vincentvibe3.efplayer.extractors.Youtube
 import com.github.Vincentvibe3.efplayer.formats.webm.EBMLHeader
 import com.github.Vincentvibe3.efplayer.formats.webm.WebmDocument
 import com.github.Vincentvibe3.efplayer.formats.webm.streaming.WebmReader
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import java.io.ByteArrayInputStream
 import java.nio.file.Files
@@ -128,5 +131,20 @@ class Main {
 
         }
     }
+
+//    @Test
+//    fun fullStream(){
+//        val player = Player()
+//        runBlocking {
+//            launch {
+//                player.play("https://www.youtube.com/watch?v=I0kytvnHG-Q")
+//            }
+//            delay(1000L)
+//            while (player.thread.isAlive){
+//                delay(1000L)
+//            }
+//            player.currentTrack?.trackChunks?.let { println(it.size) }
+//        }
+//    }
 
 }
