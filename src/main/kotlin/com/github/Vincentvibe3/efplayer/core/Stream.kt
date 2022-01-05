@@ -11,14 +11,21 @@ import kotlinx.coroutines.*
 import java.lang.Runnable
 import java.nio.ByteBuffer
 import java.util.concurrent.LinkedBlockingDeque
+import java.util.concurrent.atomic.AtomicBoolean
 
 class Stream(val url: String, val track:Track):Runnable {
 
     //bytes needed to identify all possible formats
     val FORMATS_ID_MAX_BYTES= 4
 
-    val data = LinkedBlockingDeque<Byte>(300000)
+    val data = LinkedBlockingDeque<Byte>()
     var missingBytes = 0L
+
+    val isAlive = AtomicBoolean(true)
+
+    fun stop(){
+        isAlive.set(false)
+    }
 
     suspend fun startStreaming(url:String){
         val client = HttpClient(CIO)
@@ -53,15 +60,22 @@ class Stream(val url: String, val track:Track):Runnable {
                     }
                 }
                 do {
-                    val available = data.size
-                    val minimumBytesNeeded = format.MINIMUM_BYTES_NEEDED
-                    val canStream = httpResponse.content.availableForRead
-                    format.processNextBlock(data)
-//                    val currentRead = canStream
-//                    println(currentRead)
-                    val bytes = httpResponse.readBytes(canStream)
-                    offset += canStream
-                    data.write(bytes)
+                    //set to stop stream and exit
+                    println(isAlive.get())
+                    if (!isAlive.get()){
+                        println("cancelling")
+                        httpResponse.cancel("stream stopped")
+                    } else {
+                        val canStream = httpResponse.content.availableForRead
+                        format.processNextBlock(data)
+                        val bytes = httpResponse.readBytes(canStream)
+                        offset += canStream
+                        data.write(bytes)
+                        println(track.trackChunks.size)
+                    }
+                    if (!httpResponse.isActive){
+                        break
+                    }
 //                    println("chunks ${track.trackChunks.size}")
 //                    println("Download in progress, offset: ${offset}, current read ${canStream} / ${contentLength}")
                 } while (offset < contentLength!!)

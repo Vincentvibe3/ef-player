@@ -5,7 +5,7 @@ import kotlinx.coroutines.runBlocking
 
 fun main(){
 
-    val player = Player()
+    val player = Player(EL())
     runBlocking {
         launch {
             player.play("https://www.youtube.com/watch?v=cd5QuZq5jmg")

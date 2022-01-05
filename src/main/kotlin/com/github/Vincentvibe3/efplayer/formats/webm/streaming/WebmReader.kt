@@ -46,7 +46,8 @@ class WebmReader(val track: Track):Format {
     private var currentBlock = STEPS.SKIP
     private var currentStep = STEPS.GET_SIZE
     private var currentBlockLeft = -1L
-    private var headerParsed = false
+    private var missingData = false
+    var addcount = 0
     private val conversionByteBuffer: ByteBuffer = ByteBuffer.allocate(8)
     override val MINIMUM_BYTES_NEEDED = 8L
 
@@ -130,7 +131,8 @@ class WebmReader(val track: Track):Format {
                 }
                 data.putFirst(idBytes[0])
 //                println(data)
-                throw MissingDataException()
+                missingData = true
+                break
             }
             currentBlockLeft -= 1
             val bytesRead = when (id){
@@ -167,8 +169,9 @@ class WebmReader(val track: Track):Format {
 //                    if (timestamp != null) {
 //                        val chunk = (timestamp+dataTimestamp)/20
                         track.trackChunks.put(opus)
-//                        addcount++
-//                        println(addcount)
+//                        println("adding data")
+                        addcount++
+                        println(addcount)
 //                    }
                     elementSize.value+elementSize.bytesRead
 //                    throw InvalidIdException()
@@ -198,7 +201,7 @@ class WebmReader(val track: Track):Format {
 //            println(data.size)
             currentBlockLeft-=data.size
             data.skip(data.size)
-            throw MissingDataException()
+            missingData = true
         } else {
             data.skip(currentBlockLeft.toInt())
 //            println("final read")
@@ -220,33 +223,33 @@ class WebmReader(val track: Track):Format {
 //            println(currentBlockLeft)
 //            println("${data.size} size")
 //            println(currentStep)
-            try{
-                when (currentStep){
-                    STEPS.GET_ID -> {
+            when (currentStep){
+                STEPS.GET_ID -> {
 //                        println("getting ID")
-                        getID(data)
-                    }
-                    STEPS.GET_SIZE -> {
-//                        println("getting size")
-                        getSize(data)
-                    }
-                    STEPS.CHECK_SEGMENT -> {checkSegment(data)}
-                    STEPS.HEADER -> {}
-                    STEPS.SEEKHEAD -> {}
-                    STEPS.INFO -> {}
-                    STEPS.TRACKS -> {}
-                    STEPS.CHAPTERS -> {}
-                    STEPS.CLUSTER -> {
-                        readCluster(data)
-                    }
-                    STEPS.CUES -> {}
-                    STEPS.ATTACHMENTS -> {}
-                    STEPS.TAGS -> {}
-                    STEPS.SKIP -> {
-                        skip(data)
-                    }
+                    getID(data)
                 }
-            } catch (e:MissingDataException) {
+                STEPS.GET_SIZE -> {
+//                        println("getting size")
+                    getSize(data)
+                }
+                STEPS.CHECK_SEGMENT -> {checkSegment(data)}
+                STEPS.HEADER -> {}
+                STEPS.SEEKHEAD -> {}
+                STEPS.INFO -> {}
+                STEPS.TRACKS -> {}
+                STEPS.CHAPTERS -> {}
+                STEPS.CLUSTER -> {
+                    readCluster(data)
+                }
+                STEPS.CUES -> {}
+                STEPS.ATTACHMENTS -> {}
+                STEPS.TAGS -> {}
+                STEPS.SKIP -> {
+                    skip(data)
+                }
+            }
+            if (missingData){
+                missingData = false
                 break
             }
         }
