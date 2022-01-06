@@ -11,7 +11,7 @@ import java.util.concurrent.LinkedTransferQueue
 
 class Track(val url:String, val extractor: Extractor, val title:String, val duration:Long) {
 
-    val trackChunks = LinkedBlockingQueue<ByteArray>()
+    val trackChunks = LinkedBlockingQueue<ByteArray>(4000)
 
     suspend fun getStream():String?{
         return extractor.getStream(url)

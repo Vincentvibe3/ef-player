@@ -1,6 +1,5 @@
 package com.github.Vincentvibe3.efplayer.formats.webm.streaming
 
-import com.github.Vincentvibe3.efplayer.core.MissingDataException
 import com.github.Vincentvibe3.efplayer.core.Result
 import com.github.Vincentvibe3.efplayer.core.Track
 import com.github.Vincentvibe3.efplayer.formats.Format
@@ -106,9 +105,9 @@ class WebmReader(val track: Track):Format {
     }
 
     suspend fun readCluster(data: LinkedBlockingDeque<Byte>){
-        var timestamp: Int? = null
         if (data.size<9){
-            throw MissingDataException()
+            missingData = true
+            return
         }
         while (currentBlockLeft>0 && data.size>=9){
 //            println("data $data")
@@ -140,12 +139,12 @@ class WebmReader(val track: Track):Format {
                     println("at timestamp")
                     val int = ByteArray(4)
                     val timeStampData = data.read(elementSize.value.toInt())
-                    val padding = Int.SIZE_BYTES-timeStampData.size
-                    System.arraycopy(timeStampData, 0, int, padding, timeStampData.size)
-                    conversionByteBuffer.clear()
-                    timestamp = conversionByteBuffer.put(int).flip().int
-                    conversionByteBuffer.clear()
-//                    println("$timestamp cluster ts")
+//                    val padding = Int.SIZE_BYTES-timeStampData.size
+//                    System.arraycopy(timeStampData, 0, int, padding, timeStampData.size)
+////                    conversionByteBuffer.clear()
+////                    timestamp = conversionByteBuffer.put(int).flip().int
+////                    conversionByteBuffer.clear()
+////                    println("$timestamp cluster ts")
                     elementSize.value+elementSize.bytesRead
                 }
                 0xa0 -> {

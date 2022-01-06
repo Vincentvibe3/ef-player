@@ -7,6 +7,7 @@ class Player(val eventListener: EventListener) {
 
     var currentTrack:Track? = null
     var stream:Stream? = null
+    var paused = false
 
     suspend fun play(url:String){
         currentTrack = Youtube.getTrack(url)
@@ -22,7 +23,7 @@ class Player(val eventListener: EventListener) {
     suspend fun load(url:String){
         val track = Youtube.getTrack(url)
         if (track != null) {
-            eventListener.onTrackLoad(track)
+            eventListener.onTrackLoad(track, this)
         } else {
             eventListener.onTrackLoadFailed()
         }
@@ -36,12 +37,25 @@ class Player(val eventListener: EventListener) {
             stream = Stream(streamUrl, track)
         }
         Thread(stream).start()
+        eventListener.onTrackStart(track, this)
     }
 
     fun stop(){
         //clear the track buffer to prevent blocking
         currentTrack?.trackChunks?.clear()
         stream?.stop()
+        currentTrack?.let { eventListener.onTrackDone(it, this) }
+        currentTrack = null
+    }
+
+    fun pause(){
+        paused = true
+        currentTrack?.let { eventListener.onTrackPaused(it, this) }
+    }
+
+    fun resume(){
+        paused = false
+        currentTrack?.let { eventListener.onTrackResumed(it, this) }
     }
 
     fun provide(): ByteArray {
@@ -49,7 +63,11 @@ class Player(val eventListener: EventListener) {
     }
 
     fun canProvide():Boolean{
-        return currentTrack?.trackChunks?.isNotEmpty() ?: false
+        return if (!paused){
+            currentTrack?.trackChunks?.isNotEmpty() ?: false
+        } else {
+            false
+        }
     }
 
 }

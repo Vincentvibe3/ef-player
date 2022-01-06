@@ -5,13 +5,16 @@ import kotlinx.coroutines.runBlocking
 
 fun main(){
 
-    val player = Player(EL())
+
+    val el = EL()
+    val player = Player(el)
     runBlocking {
         launch {
-            player.play("https://www.youtube.com/watch?v=cd5QuZq5jmg")
+            player.load("https://www.youtube.com/watch?v=cd5QuZq5jmg")
         }
     }
     while (true){
+        player.stop()
         if(player.canProvide()){
             player.provide()
             println("playing")

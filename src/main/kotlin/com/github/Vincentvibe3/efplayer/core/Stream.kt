@@ -59,26 +59,25 @@ class Stream(val url: String, val track:Track):Runnable {
                         WebmReader(track)
                     }
                 }
-                do {
+                while (offset < contentLength!!) {
                     //set to stop stream and exit
-                    println(isAlive.get())
                     if (!isAlive.get()){
                         println("cancelling")
-                        httpResponse.cancel("stream stopped")
+                        httpResponse.cancel()
                     } else {
                         val canStream = httpResponse.content.availableForRead
-                        format.processNextBlock(data)
                         val bytes = httpResponse.readBytes(canStream)
                         offset += canStream
                         data.write(bytes)
-                        println(track.trackChunks.size)
+                        format.processNextBlock(data)
+                        println("Download in progress, offset: ${offset}, current read $canStream / $contentLength")
                     }
                     if (!httpResponse.isActive){
+                        data.clear()
+                        track.trackChunks.clear()
                         break
                     }
-//                    println("chunks ${track.trackChunks.size}")
-//                    println("Download in progress, offset: ${offset}, current read ${canStream} / ${contentLength}")
-                } while (offset < contentLength!!)
+                }
             }
 
 //            println("Download done")
