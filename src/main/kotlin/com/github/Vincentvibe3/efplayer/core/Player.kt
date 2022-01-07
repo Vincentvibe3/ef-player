@@ -20,11 +20,11 @@ class Player(private val eventListener: EventListener) {
         Thread(stream).start()
     }
 
-    suspend fun load(url:String){
-        val type = Youtube.getUrlType(url)
+    suspend fun load(query:String){
+        val type = Youtube.getUrlType(query)
         when (type){
             Extractor.URL_TYPE.TRACK->{
-                val track = Youtube.getTrack(url)
+                val track = Youtube.getTrack(query)
                 if (track != null) {
                     eventListener.onTrackLoad(track, this)
                 } else {
@@ -32,7 +32,7 @@ class Player(private val eventListener: EventListener) {
                 }
             }
             Extractor.URL_TYPE.PLAYLIST->{
-                val tracks = Youtube.getPlaylistTracks(url)
+                val tracks = Youtube.getPlaylistTracks(query)
                 if (tracks.isEmpty()) {
                     eventListener.onPlaylistLoaded(tracks, this)
                 } else {
@@ -40,7 +40,12 @@ class Player(private val eventListener: EventListener) {
                 }
             }
             Extractor.URL_TYPE.INVALID->{
-                eventListener.onLoadFailed()
+                val track = Youtube.search(query)
+                if (track != null) {
+                    eventListener.onTrackLoad(track, this)
+                } else {
+                    eventListener.onLoadFailed()
+                }
             }
         }
     }

@@ -225,6 +225,32 @@ object Youtube: Extractor() {
         }
     }
 
+    suspend fun search(query:String):Track?{
+        val params = hashMapOf(
+            "browseId" to query,
+            "params" to "CAASAhAB"
+        )
+        val body = buildInnertubePostBody(params)
+        val response = RequestHandler.post("https://www.youtube.com/youtubei/v1/search?key=AIzaSyAO_FJ2SlqU8Q4STEHLGCilw_Y9_11qcW8", body)
+        val jsonResponse = JSONObject(response)
+        val resultCount = jsonResponse.getString("estimatedResults").toLong()
+        if (resultCount>0){
+            val firstResult = jsonResponse.getJSONObject("contents")
+                .getJSONObject("twoColumnSearchResultsRenderer")
+                .getJSONObject("primaryContents")
+                .getJSONObject("sectionListRenderer")
+                .getJSONArray("contents")
+                .getJSONObject(0)
+                .getJSONObject("itemSectionRenderer")
+                .getJSONArray("contents")
+                .getJSONObject(0)
+                .getJSONObject("videoRenderer")
+            val id = firstResult.getString("videoId")
+            return getTrack("https://www.youtube.com/watch?v=$id")
+        }
+        return null
+    }
+
     override suspend fun getPlaylistTracks(url:String):List<Track>{
         val id = url.removePrefix("https://www.youtube.com/playlist?list=")
         val params = hashMapOf(
