@@ -1,7 +1,6 @@
 package com.github.Vincentvibe3.efplayer.core
 
 import com.github.Vincentvibe3.efplayer.extractors.Youtube
-import kotlinx.coroutines.delay
 
 class Player(val eventListener: EventListener) {
 

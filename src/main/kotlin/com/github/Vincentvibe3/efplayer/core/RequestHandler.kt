@@ -21,7 +21,7 @@ object RequestHandler {
     val rateLimits = HashMap<String, Long>()
     private val mutex = Mutex()
 
-    suspend fun get(originalUrl: String):String{
+    suspend fun get(originalUrl: String, headers:HashMap<String, String> = HashMap()):String{
         println(originalUrl)
         val host = if (rateLimits.containsKey(originalUrl)){
             originalUrl
@@ -47,7 +47,13 @@ object RequestHandler {
         var success:Boolean
         val client = HttpClient()
         try {
-            val response: HttpResponse = client.get(originalUrl)
+            val response: HttpResponse = client.get(originalUrl){
+                headers {
+                    headers.forEach {
+                        append(it.key, it.value)
+                    }
+                }
+            }
             body = response.readText()
             success = true
         } catch (e:ConnectException){
@@ -68,6 +74,63 @@ object RequestHandler {
             throw RequestFailedException()
         } else {
             return body
+        }
+    }
+
+    suspend fun post(originalUrl: String, requestBody:String, headers:HashMap<String, String> = HashMap()):String{
+        println(originalUrl)
+        val host = if (rateLimits.containsKey(originalUrl)){
+            originalUrl
+        } else {
+            try {
+                URI(originalUrl).host
+            } catch (e:URISyntaxException){
+                e.printStackTrace()
+                throw RequestFailedException()
+            }
+        }
+        var queueTime by Delegates.notNull<Long>()
+        //sync queue position fetching
+        mutex.withLock {
+            queueTime = getQueuePos(host)
+        }
+        while (System.currentTimeMillis()/1000 < queueTime) {
+            delay(100L)
+        }
+        cleanQueue(queueTime)
+
+        var responseBody = ""
+        var success:Boolean
+        val client = HttpClient()
+        try {
+            val response: HttpResponse = client.post(originalUrl){
+                body = requestBody
+                headers {
+                    headers.forEach {
+                        append(it.key, it.value)
+                    }
+                }
+            }
+            responseBody = response.readText()
+            success = true
+        } catch (e:ConnectException){
+            e.printStackTrace()
+            success = false
+        } catch (e:RedirectResponseException){
+            e.printStackTrace()
+            success = false
+        } catch (e:ClientRequestException){
+            e.printStackTrace()
+            success = false
+        } catch (e:ServerResponseException){
+            e.printStackTrace()
+            success = false
+        }
+
+        if (!success){
+            throw RequestFailedException()
+        } else {
+            return responseBody
         }
     }
 

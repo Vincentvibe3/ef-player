@@ -9,7 +9,7 @@ import java.io.PipedOutputStream
 import java.util.concurrent.LinkedBlockingQueue
 import java.util.concurrent.LinkedTransferQueue
 
-class Track(val url:String, val extractor: Extractor, val title:String, val duration:Long) {
+class Track(val url:String, val extractor: Extractor, val title:String?, val author:String?, val duration:Long) {
 
     val trackChunks = LinkedBlockingQueue<ByteArray>(4000)
 
