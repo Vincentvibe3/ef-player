@@ -6,6 +6,13 @@ class EL:EventListener {
         player.play(track)
     }
 
+    override suspend fun onPlaylistLoaded(tracks: List<Track>, player: Player) {
+        player.play(tracks.first())
+        tracks.forEach {
+            println(it.url)
+        }
+    }
+
     override fun onTrackStart(track: Track, player: Player) {
         println("Track started")
     }
@@ -14,7 +21,7 @@ class EL:EventListener {
         println("track done")
     }
 
-    override fun onTrackLoadFailed() {
+    override fun onLoadFailed() {
         TODO("Not yet implemented")
     }
 

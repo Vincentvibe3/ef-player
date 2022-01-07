@@ -11,15 +11,17 @@ object Youtube: Extractor() {
 
     private const val INNERTUBE_API_KEY = "AIzaSyAO_FJ2SlqU8Q4STEHLGCilw_Y9_11qcW8"
 
-    private fun buildInnertubePostBody(videoId:String):String{
+    private fun buildInnertubePostBody(params:HashMap<String, String>):String{
         val topLevel = JSONObject()
         val context = JSONObject()
         val client = JSONObject()
-            .put("clientName", "WEB_EMBEDDED_PLAYER")
-            .put("clientVersion", "1.20220104.01.00")
+            .put("clientName", "WEB")
+            .put("clientVersion", "2.20220106.01.00")
         context.put("client",client)
+        params.forEach {
+            topLevel.put(it.key, it.value)
+        }
         topLevel.put("context", context)
-        topLevel.put("videoId", videoId)
         return topLevel.toString()
     }
 
@@ -29,7 +31,8 @@ object Youtube: Extractor() {
         var author: String? = null
 
         val id = url.removePrefix("https://www.youtube.com/watch?v=")
-        val body = buildInnertubePostBody(id)
+        val params = hashMapOf("videoId" to id)
+        val body = buildInnertubePostBody(params)
         val response = RequestHandler.post("https://www.youtube.com/youtubei/v1/player?key=$INNERTUBE_API_KEY", body)
         val jsonResponse = JSONObject(response)
         if (jsonResponse.has("streamingData")){
@@ -61,6 +64,7 @@ object Youtube: Extractor() {
                     } else {
                         streamUrl = format.getString("signatureCipher")
                     }
+                    highestBitrate = bitrate
                 }
             }
         }
@@ -81,9 +85,8 @@ object Youtube: Extractor() {
         return streamUrl
     }
 
-    private suspend fun getDuration(formats:JSONArray):Long{
+    private fun getDuration(formats:JSONArray):Long{
         var highestBitrate = -1L
-        var streamUrl:String? = null
         var duration = -1L
         for  (index in 0 until formats.length()){
             val format = formats.getJSONObject(index)
@@ -98,7 +101,7 @@ object Youtube: Extractor() {
         return duration
     }
 
-    fun getSignature(js:String, sig:String): String? {
+    private fun getSignature(js:String, sig:String): String? {
         val array = sig.split("") as ArrayList
         array.removeFirst()
         array.removeLast()
@@ -141,7 +144,7 @@ object Youtube: Extractor() {
         return null
     }
 
-    fun jsFn1Arg(a: ArrayList<String>, js:String){
+    private fun jsFn1Arg(a: ArrayList<String>, js:String){
         val splitjs = js.split("{")
         val steps = splitjs[1].removeSuffix(",").removeSuffix("}").split(";")
         steps.forEach {
@@ -151,7 +154,7 @@ object Youtube: Extractor() {
         }
     }
 
-    fun jsFn2Arg(a: ArrayList<String>, b:Int, js:String){
+    private fun jsFn2Arg(a: ArrayList<String>, b:Int, js:String){
         var c = ""
         val splitjs = js.split("{")
         val steps = splitjs[1].removeSuffix(",").removeSuffix("}").split(";")
@@ -185,7 +188,7 @@ object Youtube: Extractor() {
         }
     }
 
-    suspend fun getPlayer(url:String):String? {
+    private suspend fun getPlayer(url:String):String? {
         val id = url.removePrefix("https://www.youtube.com/watch?v=")
         val matchpattern = "(?<=<script src=\")(?!.*?www-embed-player\\.js)(.*?/base.js)(?=\" nonce=\")".toRegex()
         val response = RequestHandler.get("https://www.youtube.com/embed/$id")
@@ -196,18 +199,10 @@ object Youtube: Extractor() {
         return null
     }
 
-    fun composeJsFunc(js:String){
-        val translatedSteps = ArrayList<Any>()
-        val splitjs = js.split("{")
-        val argCount = splitjs.first().split(",").size
-        val steps = splitjs[1].removeSuffix(",").removeSuffix("}").split(";")
-
-    }
-
-
     override suspend fun getStream(url:String):String?{
         val id = url.removePrefix("https://www.youtube.com/watch?v=")
-        val body = buildInnertubePostBody(id)
+        val params = hashMapOf("videoId" to id)
+        val body = buildInnertubePostBody(params)
         val response = RequestHandler.post("https://www.youtube.com/youtubei/v1/player?key=$INNERTUBE_API_KEY", body)
         val jsonResponse = JSONObject(response)
         if (jsonResponse.has("streamingData")){
@@ -220,46 +215,50 @@ object Youtube: Extractor() {
         return null
     }
 
-//    suspend fun getPlaylistTracks(url:String):List<Track>{
-//        val tracks = ArrayList<Track>()
-//        val response = RequestHandler.get(url)
-//        val doc = Jsoup.parse(response)
-//        doc.select("script").forEach { script ->
-//            if (script.data().startsWith("var ytInitialData = ")) {
-//                val json = JSONObject(script.data().removePrefix("var ytInitialData = "))
-//                if (json.has("contents")){
-//                    val videos = json.getJSONObject("contents")
-//                        .getJSONObject("twoColumnBrowseResultsRenderer")
-//                        .getJSONArray("tabs")
-//                        .getJSONObject(0)
-//                        .getJSONObject("tabRenderer")
-//                        .getJSONObject("content")
-//                        .getJSONObject("sectionListRenderer")
-//                        .getJSONArray("content")
-//                        .getJSONObject(0)
-//                        .getJSONObject("itemSectionRenderer")
-//                        .getJSONArray("contents")
-//                        .getJSONObject(0)
-//                        .getJSONObject("playlistVideoListRenderer")
-//                        .getJSONArray("contents")
-//
-//                    for (i in 0..videos.length()){
-//                        val video = videos.getJSONObject(i)
-//                        val duration = video.getString("lengthSeconds").toLong()
-//                        val title = video.getJSONObject("title")
-//                            .getJSONArray("runs")
-//                            .getJSONObject(0)
-//                            .getString("text")
-//                        val url = "https://www.youtube.com/watch?v="+video.getString("videoId")
-//                        val track = Track(url, Youtube, title, duration)
-//                        tracks.add(track)
-//                    }
-//
-//                }
-//            }
-//
-//        }
-//        return tracks
-//    }
+    override suspend fun getUrlType(url: String): URL_TYPE {
+        return if (url.contains("://www.youtube.com/watch?v=")){
+             URL_TYPE.TRACK
+        } else if (url.contains("://www.youtube.com/playlist?list=")){
+            URL_TYPE.PLAYLIST
+        } else{
+            URL_TYPE.INVALID
+        }
+    }
+
+    override suspend fun getPlaylistTracks(url:String):List<Track>{
+        val id = url.removePrefix("https://www.youtube.com/playlist?list=")
+        val params = hashMapOf(
+            "browseId" to "VL$id",
+            "params" to "wgYCCAA="
+        )
+        val body = buildInnertubePostBody(params)
+        val tracks = ArrayList<Track>()
+        val response = RequestHandler.post("https://www.youtube.com/youtubei/v1/browse?key=AIzaSyAO_FJ2SlqU8Q4STEHLGCilw_Y9_11qcW8", body)
+        val jsonResponse = JSONObject(response)
+        val contents = jsonResponse.getJSONObject("contents")
+            .getJSONObject("twoColumnBrowseResultsRenderer")
+            .getJSONArray("tabs")
+            .getJSONObject(0)
+            .getJSONObject("tabRenderer")
+            .getJSONArray("contents")
+
+        for (index in 0 until contents.length()){
+            val item = contents.getJSONObject(index)
+                .getJSONObject("playlistVideoRenderer")
+            val id = item.getString("videoId")
+            val title = item.getJSONObject("title")
+                .getJSONArray("runs")
+                .getJSONObject(0)
+                .getString("text")
+            val duration = item.getString("lengthSeconds").toLong()*1000
+            val author = item.getJSONObject("shortBylineText")
+                .getJSONArray("runs")
+                .getJSONObject(0)
+                .getString("text")
+
+            tracks.add(Track("://www.youtube.com/watch?v=$id", this, title, author, duration))
+        }
+        return tracks
+    }
 
 }

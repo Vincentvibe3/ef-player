@@ -70,7 +70,7 @@ class Stream(val url: String, val track:Track):Runnable {
                         offset += canStream
                         data.write(bytes)
                         format.processNextBlock(data)
-                        println("Download in progress, offset: ${offset}, current read $canStream / $contentLength")
+//                        println("Download in progress, offset: ${offset}, current read $canStream / $contentLength")
                     }
                     if (!httpResponse.isActive){
                         data.clear()

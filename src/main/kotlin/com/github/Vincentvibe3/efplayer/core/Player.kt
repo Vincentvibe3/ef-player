@@ -1,11 +1,12 @@
 package com.github.Vincentvibe3.efplayer.core
 
+import com.github.Vincentvibe3.efplayer.extractors.Extractor
 import com.github.Vincentvibe3.efplayer.extractors.Youtube
 
-class Player(val eventListener: EventListener) {
+class Player(private val eventListener: EventListener) {
 
     var currentTrack:Track? = null
-    var stream:Stream? = null
+    private var stream:Stream? = null
     var paused = false
 
     suspend fun play(url:String){
@@ -20,11 +21,27 @@ class Player(val eventListener: EventListener) {
     }
 
     suspend fun load(url:String){
-        val track = Youtube.getTrack(url)
-        if (track != null) {
-            eventListener.onTrackLoad(track, this)
-        } else {
-            eventListener.onTrackLoadFailed()
+        val type = Youtube.getUrlType(url)
+        when (type){
+            Extractor.URL_TYPE.TRACK->{
+                val track = Youtube.getTrack(url)
+                if (track != null) {
+                    eventListener.onTrackLoad(track, this)
+                } else {
+                    eventListener.onLoadFailed()
+                }
+            }
+            Extractor.URL_TYPE.PLAYLIST->{
+                val tracks = Youtube.getPlaylistTracks(url)
+                if (tracks.isEmpty()) {
+                    eventListener.onPlaylistLoaded(tracks, this)
+                } else {
+                    eventListener.onLoadFailed()
+                }
+            }
+            Extractor.URL_TYPE.INVALID->{
+                eventListener.onLoadFailed()
+            }
         }
     }
 
