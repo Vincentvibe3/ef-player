@@ -2,23 +2,13 @@ package com.github.Vincentvibe3.efplayer.core
 
 import com.github.Vincentvibe3.efplayer.extractors.Extractor
 import com.github.Vincentvibe3.efplayer.extractors.Youtube
+import com.github.Vincentvibe3.efplayer.streaming.Stream
 
 class Player(private val eventListener: EventListener) {
 
     var currentTrack:Track? = null
-    private var stream:Stream? = null
+    private var stream: Stream? = null
     var paused = false
-
-    suspend fun play(url:String){
-        currentTrack = Youtube.getTrack(url)
-        val streamUrl = currentTrack?.getStream()
-        if (streamUrl!=null&&currentTrack!=null){
-            currentTrack?.let {
-                stream = Stream(streamUrl, it)
-            }
-        }
-        Thread(stream).start()
-    }
 
     suspend fun load(query:String){
         val type = Youtube.getUrlType(query)
@@ -55,7 +45,7 @@ class Player(private val eventListener: EventListener) {
         currentTrack = track
         val streamUrl = track.getStream()
         if (streamUrl!=null){
-            stream = Stream(streamUrl, track)
+            stream = Stream(streamUrl, track, eventListener, this)
         }
         Thread(stream).start()
         eventListener.onTrackStart(track, this)

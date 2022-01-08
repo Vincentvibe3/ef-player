@@ -1,4 +1,4 @@
-package io.github.vincentvibe3.emergencyfood.utils.exceptions
+package com.github.Vincentvibe3.efplayer.core
 
 class RequestFailedException:Exception() {
 }

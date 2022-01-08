@@ -2,8 +2,8 @@ package com.github.Vincentvibe3.efplayer.tests
 
 import com.github.Vincentvibe3.efplayer.core.Track
 import com.github.Vincentvibe3.efplayer.extractors.Youtube
-import com.github.Vincentvibe3.efplayer.formats.webm.EBMLHeader
-import com.github.Vincentvibe3.efplayer.formats.webm.WebmDocument
+import com.github.Vincentvibe3.efplayer.formats.webm.legacy.EBMLHeader
+import com.github.Vincentvibe3.efplayer.formats.webm.legacy.WebmDocument
 import com.github.Vincentvibe3.efplayer.formats.webm.streaming.WebmReader
 import kotlinx.coroutines.runBlocking
 import java.io.ByteArrayInputStream

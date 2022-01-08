@@ -1,15 +1,12 @@
 package com.github.Vincentvibe3.efplayer.formats
 
-import com.github.Vincentvibe3.efplayer.core.Result
-import java.io.PipedInputStream
 import java.util.concurrent.LinkedBlockingDeque
-import java.util.concurrent.LinkedBlockingQueue
 
 interface Format {
 
     val MINIMUM_BYTES_NEEDED:Long
 
-    suspend fun processNextBlock(streamingDataOut: LinkedBlockingDeque<Byte>)
+    suspend fun processNextBlock(data: LinkedBlockingDeque<Byte>)
 
     fun LinkedBlockingDeque<Byte>.read(i:Int):ByteArray {
         val array = ByteArray(i)

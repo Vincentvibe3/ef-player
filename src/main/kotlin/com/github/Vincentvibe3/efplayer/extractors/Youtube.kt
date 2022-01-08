@@ -1,6 +1,6 @@
 package com.github.Vincentvibe3.efplayer.extractors
 
-import com.github.Vincentvibe3.efplayer.core.RequestHandler
+import com.github.Vincentvibe3.efplayer.streaming.RequestHandler
 import com.github.Vincentvibe3.efplayer.core.Track
 import org.json.JSONArray
 import org.json.JSONObject
@@ -95,6 +95,7 @@ object Youtube: Extractor() {
                 val bitrate = format.getLong("bitrate")
                 if (highestBitrate<bitrate){
                     duration = format.getLong("approxDurationMs")
+                    highestBitrate = bitrate
                 }
             }
         }
@@ -271,7 +272,7 @@ object Youtube: Extractor() {
         for (index in 0 until contents.length()){
             val item = contents.getJSONObject(index)
                 .getJSONObject("playlistVideoRenderer")
-            val id = item.getString("videoId")
+            val videoId = item.getString("videoId")
             val title = item.getJSONObject("title")
                 .getJSONArray("runs")
                 .getJSONObject(0)
@@ -282,7 +283,7 @@ object Youtube: Extractor() {
                 .getJSONObject(0)
                 .getString("text")
 
-            tracks.add(Track("://www.youtube.com/watch?v=$id", this, title, author, duration))
+            tracks.add(Track("://www.youtube.com/watch?v=$videoId", this, title, author, duration))
         }
         return tracks
     }

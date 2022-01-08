@@ -1,4 +1,4 @@
-package com.github.Vincentvibe3.efplayer.formats.webm
+package com.github.Vincentvibe3.efplayer.formats.webm.legacy
 
 import java.io.InputStream
 import java.nio.ByteBuffer

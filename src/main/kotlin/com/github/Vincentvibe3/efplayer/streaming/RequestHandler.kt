@@ -1,6 +1,6 @@
-package com.github.Vincentvibe3.efplayer.core
+package com.github.Vincentvibe3.efplayer.streaming
 
-import io.github.vincentvibe3.emergencyfood.utils.exceptions.RequestFailedException
+import com.github.Vincentvibe3.efplayer.core.RequestFailedException
 import io.ktor.client.*
 import io.ktor.client.features.*
 import kotlinx.coroutines.*

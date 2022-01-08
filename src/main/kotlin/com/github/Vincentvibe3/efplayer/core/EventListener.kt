@@ -1,19 +1,21 @@
 package com.github.Vincentvibe3.efplayer.core
 
-interface EventListener {
+abstract class EventListener() {
 
-    suspend fun onTrackLoad(track: Track, player: Player)
+    open suspend fun onTrackLoad(track: Track, player: Player){}
 
-    suspend fun onPlaylistLoaded(track: List<Track>, player: Player)
+    open suspend fun onPlaylistLoaded(track: List<Track>, player: Player){}
 
-    fun onTrackStart(track: Track, player: Player)
+    open fun onTrackStart(track: Track, player: Player){}
 
-    fun onTrackDone(track: Track, player: Player)
+    open fun onTrackDone(track: Track, player: Player){}
 
-    fun onLoadFailed()
+    open fun onLoadFailed(){}
 
-    fun onTrackPaused(track: Track, player: Player)
+    open fun onTrackPaused(track: Track, player: Player){}
 
-    fun onTrackResumed(track: Track, player: Player)
+    open fun onTrackResumed(track: Track, player: Player){}
+
+    open fun onTrackError(track: Track){}
 
 }

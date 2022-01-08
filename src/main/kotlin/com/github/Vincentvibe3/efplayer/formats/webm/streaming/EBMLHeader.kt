@@ -1,12 +1,8 @@
 package com.github.Vincentvibe3.efplayer.formats.webm.streaming
 
-import com.github.Vincentvibe3.efplayer.formats.webm.InvalidIdException
-import com.github.Vincentvibe3.efplayer.formats.webm.WebmDocument.Companion.checkIsEBML
-import java.io.InputStream
-import java.nio.ByteBuffer
 import kotlin.properties.Delegates
 
-class EBMLHeader {
+private class EBMLHeader {
 
     companion object {
         const val EBMLVERSION = 0x4286

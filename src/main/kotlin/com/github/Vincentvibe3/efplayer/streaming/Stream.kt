@@ -1,5 +1,9 @@
-package com.github.Vincentvibe3.efplayer.core
+package com.github.Vincentvibe3.efplayer.streaming
 
+import com.github.Vincentvibe3.efplayer.core.EventListener
+import com.github.Vincentvibe3.efplayer.core.Player
+import com.github.Vincentvibe3.efplayer.formats.Result
+import com.github.Vincentvibe3.efplayer.core.Track
 import com.github.Vincentvibe3.efplayer.formats.Formats
 import com.github.Vincentvibe3.efplayer.formats.webm.streaming.WebmReader
 import io.ktor.client.*
@@ -13,13 +17,12 @@ import java.nio.ByteBuffer
 import java.util.concurrent.LinkedBlockingDeque
 import java.util.concurrent.atomic.AtomicBoolean
 
-class Stream(val url: String, val track:Track):Runnable {
+class Stream(val url: String, val track: Track, val eventListener: EventListener, val player: Player):Runnable {
 
     //bytes needed to identify all possible formats
     val FORMATS_ID_MAX_BYTES= 4
 
     val data = LinkedBlockingDeque<Byte>()
-    var missingBytes = 0L
 
     val isAlive = AtomicBoolean(true)
 
@@ -27,7 +30,7 @@ class Stream(val url: String, val track:Track):Runnable {
         isAlive.set(false)
     }
 
-    suspend fun startStreaming(url:String){
+    private suspend fun startStreaming(url:String){
         val client = HttpClient(CIO)
         client.get<HttpStatement>(url){
             headers{}
@@ -44,6 +47,10 @@ class Stream(val url: String, val track:Track):Runnable {
              4. Process other blocks if encountered otherwise return to step 2
 
             */
+
+            if (httpResponse.status!=HttpStatusCode.OK){
+                eventListener.onTrackError(track)
+            }
 
             fun LinkedBlockingDeque<Byte>.write(b:ByteArray) {
                 b.forEach {
@@ -62,7 +69,6 @@ class Stream(val url: String, val track:Track):Runnable {
                 while (offset < contentLength!!) {
                     //set to stop stream and exit
                     if (!isAlive.get()){
-                        println("cancelling")
                         httpResponse.cancel()
                     } else {
                         val canStream = httpResponse.content.availableForRead
@@ -70,7 +76,6 @@ class Stream(val url: String, val track:Track):Runnable {
                         offset += canStream
                         data.write(bytes)
                         format.processNextBlock(data)
-//                        println("Download in progress, offset: ${offset}, current read $canStream / $contentLength")
                     }
                     if (!httpResponse.isActive){
                         data.clear()
@@ -79,25 +84,10 @@ class Stream(val url: String, val track:Track):Runnable {
                     }
                 }
             }
-
-//            println("Download done")
-//            while (!channel.isClosedForRead) {
-//                val packet = channel.readRemaining(DEFAULT_BUFFER_SIZE.toLong())
-//                println(packet.isEmpty)
-//                while (!packet.isEmpty) {
-//                    val bytes = packet.readBytes(10)
-//                    readSize++
-//                    println("reading ${readSize*10}/$total")
-////                    track.streamingData.writeBytes(bytes)
-////                    println("adding data")
-////                    println(channel.isClosedForRead)
-//                }
-//            }
         }
-        println("done")
     }
 
-    suspend fun getFormat(response: HttpResponse):Result<Formats>?{
+    private suspend fun getFormat(response: HttpResponse): Result<Formats>?{
 
         val buffer = ByteBuffer.wrap(ByteArray(FORMATS_ID_MAX_BYTES))
         //read from smallest amount to biggest
@@ -115,7 +105,7 @@ class Stream(val url: String, val track:Track):Runnable {
                 startStreaming(url)
             }
         }
-        println("stream done")
+        eventListener.onTrackDone(track, player)
     }
 
 }
