@@ -22,7 +22,6 @@ object RequestHandler {
     private val mutex = Mutex()
 
     suspend fun get(originalUrl: String, headers:HashMap<String, String> = HashMap()):String{
-        println(originalUrl)
         val host = if (rateLimits.containsKey(originalUrl)){
             originalUrl
         } else {
@@ -78,7 +77,6 @@ object RequestHandler {
     }
 
     suspend fun post(originalUrl: String, requestBody:String, headers:HashMap<String, String> = HashMap()):String{
-        println(originalUrl)
         val host = if (rateLimits.containsKey(originalUrl)){
             originalUrl
         } else {

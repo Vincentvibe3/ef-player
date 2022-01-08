@@ -81,7 +81,6 @@ object Youtube: Extractor() {
                 }
             }
         }
-        println("$streamUrl streamurl")
         return streamUrl
     }
 
@@ -110,7 +109,6 @@ object Youtube: Extractor() {
         val funcs = HashMap<String,Pair<String, Int>>()
         val matches = functionStartPattern.find(js)
         if (matches != null) {
-            println(matches.value)
             val functions = matches.value.split(";")
             val funcClass = functions.first().split(".").first()
             val classPattern = "(?<=var $funcClass=\\{)(.*?)(?=};)".toRegex(RegexOption.DOT_MATCHES_ALL)
@@ -118,7 +116,6 @@ object Youtube: Extractor() {
             if (classMatch != null) {
                 val classFuncs = classMatch.value.split(",\n")
                 classFuncs.forEach {
-                    println(it)
                     val splitNameBody = it.split(":")
                     val splitBody = splitNameBody[1].split("{")
                     val argCount = splitBody.first().split(",").size
@@ -137,7 +134,6 @@ object Youtube: Extractor() {
                             jsFn2Arg(array, args[1].toInt(), funcdata.first)
                         }
                     }
-                    println(array.joinToString(""))
                 }
             }
             return array.joinToString("")
@@ -228,7 +224,7 @@ object Youtube: Extractor() {
 
     suspend fun search(query:String):Track?{
         val params = hashMapOf(
-            "browseId" to query,
+            "query" to query,
             "params" to "CAASAhAB"
         )
         val body = buildInnertubePostBody(params)
@@ -236,7 +232,7 @@ object Youtube: Extractor() {
         val jsonResponse = JSONObject(response)
         val resultCount = jsonResponse.getString("estimatedResults").toLong()
         if (resultCount>0){
-            val firstResult = jsonResponse.getJSONObject("contents")
+            val contents = jsonResponse.getJSONObject("contents")
                 .getJSONObject("twoColumnSearchResultsRenderer")
                 .getJSONObject("primaryContents")
                 .getJSONObject("sectionListRenderer")
@@ -244,10 +240,17 @@ object Youtube: Extractor() {
                 .getJSONObject(0)
                 .getJSONObject("itemSectionRenderer")
                 .getJSONArray("contents")
-                .getJSONObject(0)
-                .getJSONObject("videoRenderer")
-            val id = firstResult.getString("videoId")
-            return getTrack("https://www.youtube.com/watch?v=$id")
+            for (index in 0 until contents.length()){
+                val result = contents.getJSONObject(index)
+                if (result.has("videoRenderer")){
+                    val resultInfo = result.getJSONObject("videoRenderer")
+                    val id = resultInfo.getString("videoId")
+                    return getTrack("https://www.youtube.com/watch?v=$id")
+                }
+
+            }
+
+
         }
         return null
     }

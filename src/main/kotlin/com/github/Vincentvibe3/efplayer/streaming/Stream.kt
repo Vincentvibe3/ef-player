@@ -99,7 +99,6 @@ class Stream(val url: String, val track: Track, val eventListener: EventListener
     }
 
     override fun run() {
-        println("Stream started")
         runBlocking {
             launch {
                 startStreaming(url)
