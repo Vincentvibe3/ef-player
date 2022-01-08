@@ -255,6 +255,47 @@ object Youtube: Extractor() {
         return null
     }
 
+    private suspend fun getPlaylistTracksNext(continuation:String, tracks:ArrayList<Track>){
+        val params = hashMapOf(
+            "continuation" to continuation,
+        )
+        val body = buildInnertubePostBody(params)
+        val response = RequestHandler.post("https://www.youtube.com/youtubei/v1/browse?key=AIzaSyAO_FJ2SlqU8Q4STEHLGCilw_Y9_11qcW8", body)
+        val jsonResponse = JSONObject(response)
+        val contents = jsonResponse.getJSONArray("onResponseReceivedActions")
+            .getJSONObject(0)
+            .getJSONObject("appendContinuationItemsAction")
+            .getJSONArray("continuationItems")
+
+        for (index in 0 until contents.length()){
+            val item = contents.getJSONObject(index)
+            if (item.has("playlistVideoRenderer")) {
+                val entry = item.getJSONObject("playlistVideoRenderer")
+                val videoId = entry.getString("videoId")
+                val title = entry.getJSONObject("title")
+                    .getJSONArray("runs")
+                    .getJSONObject(0)
+                    .getString("text")
+                if (title!="[Deleted video]"){
+                    val duration = entry.getString("lengthSeconds").toLong() * 1000
+                    val author = entry.getJSONObject("shortBylineText")
+                        .getJSONArray("runs")
+                        .getJSONObject(0)
+                        .getString("text")
+
+                    val videoUrl = "https://www.youtube.com/watch?v=$videoId"
+                    tracks.add(Track(videoUrl, this, title, author, duration))
+                }
+            } else if (item.has("continuationItemRenderer")) {
+                val token = item.getJSONObject("continuationItemRenderer")
+                    .getJSONObject("continuationEndpoint")
+                    .getJSONObject("continuationCommand")
+                    .getString("token")
+                getPlaylistTracksNext(token, tracks)
+            }
+        }
+    }
+
     override suspend fun getPlaylistTracks(url:String):List<Track>{
         val id = url.removePrefix("https://www.youtube.com/playlist?list=")
         val params = hashMapOf(
@@ -289,14 +330,22 @@ object Youtube: Extractor() {
                     .getJSONArray("runs")
                     .getJSONObject(0)
                     .getString("text")
-                val duration = entry.getString("lengthSeconds").toLong() * 1000
-                val author = entry.getJSONObject("shortBylineText")
-                    .getJSONArray("runs")
-                    .getJSONObject(0)
-                    .getString("text")
+                if (title!="[Deleted video]"){
+                    val duration = entry.getString("lengthSeconds").toLong() * 1000
+                    val author = entry.getJSONObject("shortBylineText")
+                        .getJSONArray("runs")
+                        .getJSONObject(0)
+                        .getString("text")
 
-                val videoUrl = "https://www.youtube.com/watch?v=$videoId"
-                tracks.add(Track(videoUrl, this, title, author, duration))
+                    val videoUrl = "https://www.youtube.com/watch?v=$videoId"
+                    tracks.add(Track(videoUrl, this, title, author, duration))
+                }
+            } else if (item.has("continuationItemRenderer")) {
+                val token = item.getJSONObject("continuationItemRenderer")
+                    .getJSONObject("continuationEndpoint")
+                    .getJSONObject("continuationCommand")
+                    .getString("token")
+                getPlaylistTracksNext(token, tracks)
             }
         }
         return tracks

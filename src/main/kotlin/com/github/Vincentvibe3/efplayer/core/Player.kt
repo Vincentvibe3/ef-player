@@ -3,6 +3,7 @@ package com.github.Vincentvibe3.efplayer.core
 import com.github.Vincentvibe3.efplayer.extractors.Extractor
 import com.github.Vincentvibe3.efplayer.extractors.Youtube
 import com.github.Vincentvibe3.efplayer.streaming.Stream
+import kotlinx.coroutines.runBlocking
 
 class Player(private val eventListener: EventListener) {
 
@@ -10,31 +11,34 @@ class Player(private val eventListener: EventListener) {
     private var stream: Stream? = null
     var paused = false
 
-    suspend fun load(query:String){
-        val type = Youtube.getUrlType(query)
-        when (type){
-            Extractor.URL_TYPE.TRACK->{
-                val track = Youtube.getTrack(query)
-                if (track != null) {
-                    eventListener.onTrackLoad(track, this)
-                } else {
-                    eventListener.onLoadFailed()
+    fun load(query:String){
+        val player = this
+        runBlocking {
+            val type = Youtube.getUrlType(query)
+            when (type){
+                Extractor.URL_TYPE.TRACK->{
+                    val track = Youtube.getTrack(query)
+                    if (track != null) {
+                        eventListener.onTrackLoad(track, player)
+                    } else {
+                        eventListener.onLoadFailed()
+                    }
                 }
-            }
-            Extractor.URL_TYPE.PLAYLIST->{
-                val tracks = Youtube.getPlaylistTracks(query)
-                if (tracks.isNotEmpty()) {
-                    eventListener.onPlaylistLoaded(tracks, this)
-                } else {
-                    eventListener.onLoadFailed()
+                Extractor.URL_TYPE.PLAYLIST->{
+                    val tracks = Youtube.getPlaylistTracks(query)
+                    if (tracks.isNotEmpty()) {
+                        eventListener.onPlaylistLoaded(tracks, player)
+                    } else {
+                        eventListener.onLoadFailed()
+                    }
                 }
-            }
-            Extractor.URL_TYPE.INVALID->{
-                val track = Youtube.search(query)
-                if (track != null) {
-                    eventListener.onTrackLoad(track, this)
-                } else {
-                    eventListener.onLoadFailed()
+                Extractor.URL_TYPE.INVALID->{
+                    val track = Youtube.search(query)
+                    if (track != null) {
+                        eventListener.onTrackLoad(track, player)
+                    } else {
+                        eventListener.onLoadFailed()
+                    }
                 }
             }
         }
