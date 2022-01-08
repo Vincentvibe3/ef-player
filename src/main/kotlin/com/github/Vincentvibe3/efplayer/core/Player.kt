@@ -23,7 +23,7 @@ class Player(private val eventListener: EventListener) {
             }
             Extractor.URL_TYPE.PLAYLIST->{
                 val tracks = Youtube.getPlaylistTracks(query)
-                if (tracks.isEmpty()) {
+                if (tracks.isNotEmpty()) {
                     eventListener.onPlaylistLoaded(tracks, this)
                 } else {
                     eventListener.onLoadFailed()
@@ -40,23 +40,19 @@ class Player(private val eventListener: EventListener) {
         }
     }
 
-    suspend fun play(track: Track){
+    fun play(track: Track){
         stop()
         currentTrack = track
-        val streamUrl = track.getStream()
-        if (streamUrl!=null){
-            stream = Stream(streamUrl, track, eventListener, this)
-        }
+        stream = Stream(track, eventListener, this)
         Thread(stream).start()
-        eventListener.onTrackStart(track, this)
     }
 
     fun stop(){
         //clear the track buffer to prevent blocking
         currentTrack?.trackChunks?.clear()
         stream?.stop()
-        currentTrack?.let { eventListener.onTrackDone(it, this) }
         currentTrack = null
+        stream = null
     }
 
     fun pause(){

@@ -270,23 +270,34 @@ object Youtube: Extractor() {
             .getJSONArray("tabs")
             .getJSONObject(0)
             .getJSONObject("tabRenderer")
+            .getJSONObject("content")
+            .getJSONObject("sectionListRenderer")
+            .getJSONArray("contents")
+            .getJSONObject(0)
+            .getJSONObject("itemSectionRenderer")
+            .getJSONArray("contents")
+            .getJSONObject(0)
+            .getJSONObject("playlistVideoListRenderer")
             .getJSONArray("contents")
 
         for (index in 0 until contents.length()){
             val item = contents.getJSONObject(index)
-                .getJSONObject("playlistVideoRenderer")
-            val videoId = item.getString("videoId")
-            val title = item.getJSONObject("title")
-                .getJSONArray("runs")
-                .getJSONObject(0)
-                .getString("text")
-            val duration = item.getString("lengthSeconds").toLong()*1000
-            val author = item.getJSONObject("shortBylineText")
-                .getJSONArray("runs")
-                .getJSONObject(0)
-                .getString("text")
+            if (item.has("playlistVideoRenderer")) {
+                val entry = item.getJSONObject("playlistVideoRenderer")
+                val videoId = entry.getString("videoId")
+                val title = entry.getJSONObject("title")
+                    .getJSONArray("runs")
+                    .getJSONObject(0)
+                    .getString("text")
+                val duration = entry.getString("lengthSeconds").toLong() * 1000
+                val author = entry.getJSONObject("shortBylineText")
+                    .getJSONArray("runs")
+                    .getJSONObject(0)
+                    .getString("text")
 
-            tracks.add(Track("://www.youtube.com/watch?v=$videoId", this, title, author, duration))
+                val videoUrl = "https://www.youtube.com/watch?v=$videoId"
+                tracks.add(Track(videoUrl, this, title, author, duration))
+            }
         }
         return tracks
     }

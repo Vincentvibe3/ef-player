@@ -8,7 +8,7 @@ abstract class EventListener() {
 
     open fun onTrackStart(track: Track, player: Player){}
 
-    open fun onTrackDone(track: Track, player: Player){}
+    open fun onTrackDone(track: Track, player: Player, canStartNext:Boolean){}
 
     open fun onLoadFailed(){}
 

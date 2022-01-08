@@ -8,6 +8,7 @@ import com.github.Vincentvibe3.efplayer.formats.Formats
 import com.github.Vincentvibe3.efplayer.formats.webm.streaming.WebmReader
 import io.ktor.client.*
 import io.ktor.client.engine.cio.*
+import io.ktor.client.features.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
@@ -17,7 +18,7 @@ import java.nio.ByteBuffer
 import java.util.concurrent.LinkedBlockingDeque
 import java.util.concurrent.atomic.AtomicBoolean
 
-class Stream(val url: String, val track: Track, val eventListener: EventListener, val player: Player):Runnable {
+class Stream(val track: Track, val eventListener: EventListener, val player: Player):Runnable {
 
     //bytes needed to identify all possible formats
     val FORMATS_ID_MAX_BYTES= 4
@@ -48,9 +49,6 @@ class Stream(val url: String, val track: Track, val eventListener: EventListener
 
             */
 
-            if (httpResponse.status!=HttpStatusCode.OK){
-                eventListener.onTrackError(track)
-            }
 
             fun LinkedBlockingDeque<Byte>.write(b:ByteArray) {
                 b.forEach {
@@ -85,6 +83,9 @@ class Stream(val url: String, val track: Track, val eventListener: EventListener
                 }
             }
         }
+        while (track.trackChunks.isNotEmpty()){
+            delay(100L)
+        }
     }
 
     private suspend fun getFormat(response: HttpResponse): Result<Formats>?{
@@ -101,10 +102,22 @@ class Stream(val url: String, val track: Track, val eventListener: EventListener
     override fun run() {
         runBlocking {
             launch {
-                startStreaming(url)
+                val url = track.getStream()
+                if (url != null) {
+                    eventListener.onTrackStart(track, player)
+                    try{
+                        startStreaming(url)
+                    } catch (e:ClientRequestException){
+                        eventListener.onTrackError(track)
+                    }
+                }
             }
         }
-        eventListener.onTrackDone(track, player)
+        if (isAlive.get()){
+            eventListener.onTrackDone(track, player, true)
+        } else {
+            eventListener.onTrackDone(track, player, false)
+        }
     }
 
 }
