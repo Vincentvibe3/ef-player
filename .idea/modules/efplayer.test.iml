@@ -49,7 +49,7 @@
               <args>
                 <arg>$MODULE_DIR$/../../build/classes/java/main</arg>
                 <arg>$MODULE_DIR$/../../build/classes/kotlin/main</arg>
-                <arg>$MODULE_DIR$/../../build/libs/efplayer-1.2.4.jar</arg>
+                <arg>$MODULE_DIR$/../../build/libs/efplayer-1.2.5.jar</arg>
               </args>
             </arrayArg>
             <arrayArg name="pluginClasspaths">
