@@ -2,6 +2,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     kotlin("jvm") version "1.6.10"
+    id("org.jetbrains.dokka") version "1.6.10"
     `maven-publish`
 }
 
@@ -23,8 +24,49 @@ tasks.test {
     useJUnitPlatform()
 }
 
+
 tasks.withType<KotlinCompile> {
-    kotlinOptions.jvmTarget = "1.8"
+    kotlinOptions.jvmTarget = "17"
+}
+
+sourceSets {
+    main {
+        java.srcDir("src/main/kotlin")
+    }
+}
+
+tasks.dokkaHtml.configure {
+    outputDirectory.set(project.projectDir.resolve("docs"))
+    dokkaSourceSets {
+        configureEach {
+            jdkVersion.set(17)
+        }
+    }
+}
+
+tasks.dokkaJavadoc.configure {
+    outputDirectory.set(buildDir.resolve("dokka/javadoc"))
+    dokkaSourceSets {
+        configureEach {
+            jdkVersion.set(17)
+        }
+    }
+}
+
+tasks.register<Jar>("javadocJar")
+tasks.register<Jar>("sourcesJar")
+
+tasks {
+    named<Jar>("javadocJar"){
+        archiveClassifier.set("javadoc")
+        dependsOn("dokkaJavadoc")
+        from(buildDir.resolve("dokka/javadoc"))
+    }
+
+    named<Jar>("sourcesJar"){
+        archiveClassifier.set("sources")
+        from(sourceSets.main.get().allSource)
+    }
 }
 
 publishing {
@@ -41,6 +83,8 @@ publishing {
     publications {
         register<MavenPublication>("gpr") {
             from(components["java"])
+            artifact("sourceJar")
+            artifact("javadocJar")
         }
     }
 }
