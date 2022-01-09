@@ -90,10 +90,16 @@ publishing {
                 classifier = "javadoc"
             }
         }
+
     }
 }
 
 tasks.withType<PublishToMavenRepository>{
+    dependsOn("sourcesJar")
+    dependsOn("javadocJar")
+}
+
+tasks.withType<PublishToMavenLocal>{
     dependsOn("sourcesJar")
     dependsOn("javadocJar")
 }
