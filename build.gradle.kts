@@ -84,10 +84,10 @@ publishing {
         register<MavenPublication>("gpr") {
             from(components["java"])
             artifact("${buildDir.resolve("libs")}/efplayer-${project.version}-sources.jar"){
-                classifier = "sourcesJar"
+                classifier = "sources"
             }
             artifact("${buildDir.resolve("libs")}/efplayer-${project.version}-javadoc.jar"){
-                classifier = "javadocJar"
+                classifier = "javadoc"
             }
         }
     }
