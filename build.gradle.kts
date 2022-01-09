@@ -83,8 +83,8 @@ publishing {
     publications {
         register<MavenPublication>("gpr") {
             from(components["java"])
-            artifact("sourceJar")
-            artifact("javadocJar")
+            artifact("${buildDir.resolve("libs")}/efplayer-${project.version}-sources.jar")
+            artifact("${buildDir.resolve("libs")}/efplayer-${project.version}-javadoc.jar")
         }
     }
 }
