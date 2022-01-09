@@ -88,3 +88,8 @@ publishing {
         }
     }
 }
+
+tasks.withType<PublishToMavenRepository>{
+    dependsOn("sourcesJar")
+    dependsOn("javadocJar")
+}
