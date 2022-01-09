@@ -10,6 +10,11 @@ import java.util.*
 import java.util.concurrent.LinkedBlockingDeque
 import kotlin.experimental.and
 
+/**
+ *
+ * Class to process a WEBM stream
+ *
+ */
 class WebmReader(private val track: Track):Format {
 
     companion object {
@@ -26,6 +31,13 @@ class WebmReader(private val track: Track):Format {
             TAGS( 0x1254C367)
         }
 
+        /**
+         *
+         * Check if a file is an EBML document
+         *
+         * @return `true` if it is an EBML document `false` if it isn't
+         *
+         */
         fun checkIsEBML(bytes:ByteArray):Boolean{
             val ebmlId = 0x1A45DFA3
             val bytesInt = ByteBuffer.wrap(bytes).int
@@ -38,7 +50,9 @@ class WebmReader(private val track: Track):Format {
         CHECK_EBML, GET_ID, GET_SIZE, CHECK_SEGMENT, HEADER, SEEKHEAD, INFO, TRACKS, CHAPTERS, CLUSTER, CUES, ATTACHMENTS, TAGS, SKIP
     }
 
-    // For testing only
+    /**
+     * @suppress
+     */
     fun checkAtCluster():Boolean{
         return currentBlock == STEPS.CLUSTER
     }
@@ -50,6 +64,12 @@ class WebmReader(private val track: Track):Format {
     private val conversionByteBuffer: ByteBuffer = ByteBuffer.allocate(8)
     override val MINIMUM_BYTES_NEEDED = 8L
 
+
+    /**
+     *
+     * Read a Variable size integer as defined in the EBML specification
+     * @suppress
+     */
     fun readVINTData(source:LinkedBlockingDeque<Byte>): Result<Long> {
         val firstByte = source.removeFirst()
         val vintWidth = firstByte.countLeadingZeroBits() + 1
@@ -71,6 +91,9 @@ class WebmReader(private val track: Track):Format {
         return result
     }
 
+    /**
+     * @suppress
+     */
     fun getID(data: LinkedBlockingDeque<Byte>){
         val bytes = data.read(4)
         conversionByteBuffer.clear()

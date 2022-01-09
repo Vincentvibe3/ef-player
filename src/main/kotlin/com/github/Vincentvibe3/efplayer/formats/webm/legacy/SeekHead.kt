@@ -1,5 +1,8 @@
 package com.github.Vincentvibe3.efplayer.formats.webm.legacy
 
+/**
+ * @suppress
+ */
 class SeekHead {
 
     //seek position as Long
