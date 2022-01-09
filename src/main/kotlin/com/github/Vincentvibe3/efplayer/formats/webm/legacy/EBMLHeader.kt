@@ -6,6 +6,10 @@ import java.io.InputStream
 import java.nio.ByteBuffer
 import kotlin.properties.Delegates
 
+/**
+ * @suppress
+ *
+ */
 class EBMLHeader {
 
     companion object {

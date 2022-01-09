@@ -7,6 +7,11 @@ import org.json.JSONObject
 import java.net.URLDecoder
 import java.nio.charset.Charset
 
+/**
+ *
+ * [Extractor] for YouTube
+ *
+ */
 object Youtube: Extractor() {
 
     private const val INNERTUBE_API_KEY = "AIzaSyAO_FJ2SlqU8Q4STEHLGCilw_Y9_11qcW8"
@@ -222,6 +227,14 @@ object Youtube: Extractor() {
         }
     }
 
+    /**
+     *
+     * Searches for a video on YouTube
+     *
+     * @param query The search query to use
+     * @return A [Track] with the first found result. `null` if no result were found
+     *
+     */
     suspend fun search(query:String):Track?{
         val params = hashMapOf(
             "query" to query,

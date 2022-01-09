@@ -18,15 +18,20 @@ import java.nio.ByteBuffer
 import java.util.concurrent.LinkedBlockingDeque
 import java.util.concurrent.atomic.AtomicBoolean
 
-class Stream(val track: Track, val eventListener: EventListener, val player: Player):Runnable {
+class Stream(private val track: Track, private val eventListener: EventListener, private val player: Player):Runnable {
 
-    //bytes needed to identify all possible formats
-    val FORMATS_ID_MAX_BYTES= 4
+    private val FORMATS_ID_MAX_BYTES= 4
 
-    val data = LinkedBlockingDeque<Byte>()
+    private val data = LinkedBlockingDeque<Byte>()
 
-    val isAlive = AtomicBoolean(true)
+    private val isAlive = AtomicBoolean(true)
 
+    /**
+     * Stop the streaming process
+     *
+     * This will kill the http request and flush all read data including in the attached [Track]
+     *
+     */
     fun stop(){
         isAlive.set(false)
     }
@@ -99,6 +104,15 @@ class Stream(val track: Track, val eventListener: EventListener, val player: Pla
         return null
     }
 
+    /**
+     *
+     * Starts a stream.
+     *
+     * Called when the Stream is wrapped in a Thread
+     *
+     * *Warning* Do not call in the same `Thread` as the [Player] as it will cause the `Thread` to block
+     *
+     */
     override fun run() {
         runBlocking {
             launch {

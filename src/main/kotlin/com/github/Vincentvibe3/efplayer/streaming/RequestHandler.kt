@@ -15,12 +15,28 @@ import io.ktor.client.statement.*
 import java.net.ConnectException
 import java.net.URISyntaxException
 
+/**
+ * Handles request while rate-limiting
+ */
 object RequestHandler {
 
     private val queue = ConcurrentHashMap<String, ConcurrentHashMap<Long, Long>>()
+
+    /**
+     * Custom rate-limiting for specific sites or endpoints
+     *
+     */
     val rateLimits = HashMap<String, Long>()
+
     private val mutex = Mutex()
 
+    /**
+     * Makes a GET request
+     *
+     * @param originalUrl the URL to call
+     * @param headers Headers to use (optional)
+     *
+     */
     suspend fun get(originalUrl: String, headers:HashMap<String, String> = HashMap()):String{
         val host = if (rateLimits.containsKey(originalUrl)){
             originalUrl
@@ -76,6 +92,14 @@ object RequestHandler {
         }
     }
 
+    /**
+     * Makes a POST request
+     *
+     * @param originalUrl the URL to call
+     * @param headers Headers to use (optional)
+     * @param requestBody the request body as a [String]
+     *
+     */
     suspend fun post(originalUrl: String, requestBody:String, headers:HashMap<String, String> = HashMap()):String{
         val host = if (rateLimits.containsKey(originalUrl)){
             originalUrl

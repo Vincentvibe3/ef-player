@@ -6,6 +6,9 @@ import java.util.*
 import kotlin.collections.HashMap
 import kotlin.experimental.and
 
+/**
+ * @suppress
+ */
 class WebmDocument {
 
     lateinit var header: EBMLHeader;
