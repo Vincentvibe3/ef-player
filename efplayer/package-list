@@ -15,6 +15,7 @@ $dokka.location:com.github.Vincentvibe3.efplayer.core/Player///PointingToDeclara
 $dokka.location:com.github.Vincentvibe3.efplayer.core/Player/Player/#com.github.Vincentvibe3.efplayer.core.EventListener/PointingToDeclaration/efplayer/com.github.Vincentvibe3.efplayer.core/-player/-player.html
 $dokka.location:com.github.Vincentvibe3.efplayer.core/Player/canProvide/#/PointingToDeclaration/efplayer/com.github.Vincentvibe3.efplayer.core/-player/can-provide.html
 $dokka.location:com.github.Vincentvibe3.efplayer.core/Player/currentTrack/#/PointingToDeclaration/efplayer/com.github.Vincentvibe3.efplayer.core/-player/current-track.html
+$dokka.location:com.github.Vincentvibe3.efplayer.core/Player/eventListener/#/PointingToDeclaration/efplayer/com.github.Vincentvibe3.efplayer.core/-player/event-listener.html
 $dokka.location:com.github.Vincentvibe3.efplayer.core/Player/load/#kotlin.String/PointingToDeclaration/efplayer/com.github.Vincentvibe3.efplayer.core/-player/load.html
 $dokka.location:com.github.Vincentvibe3.efplayer.core/Player/pause/#/PointingToDeclaration/efplayer/com.github.Vincentvibe3.efplayer.core/-player/pause.html
 $dokka.location:com.github.Vincentvibe3.efplayer.core/Player/paused/#/PointingToDeclaration/efplayer/com.github.Vincentvibe3.efplayer.core/-player/paused.html
