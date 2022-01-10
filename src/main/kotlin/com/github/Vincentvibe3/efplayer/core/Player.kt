@@ -19,7 +19,7 @@ import kotlinx.coroutines.runBlocking
  * @see EventListener
  *
  */
-class Player(private val eventListener: EventListener) {
+class Player(val eventListener: EventListener) {
 
     /**
      * The active [Track]
