@@ -122,6 +122,8 @@ class Stream(private val track: Track, private val eventListener: EventListener,
                     try{
                         startStreaming(url)
                     } catch (e:ClientRequestException){
+                        println(e.message)
+                        println(e.stackTrace)
                         eventListener.onTrackError(track)
                     }
                 }
