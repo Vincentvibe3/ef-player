@@ -7,7 +7,7 @@ plugins {
 }
 
 group = "com.github.Vincentvibe3"
-version = "1.2.7"
+version = "1.2.8"
 
 repositories {
     mavenCentral()
@@ -18,7 +18,6 @@ dependencies {
     implementation("io.ktor:ktor-client-core:1.6.7")
     implementation("io.ktor:ktor-client-cio:1.6.7")
     implementation("org.json:json:20210307")
-    implementation(kotlin("stdlib-jdk8"))
 }
 
 tasks.test {
