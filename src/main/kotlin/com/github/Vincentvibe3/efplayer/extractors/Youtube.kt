@@ -77,7 +77,7 @@ object Youtube: Extractor() {
             if (streamUrl.startsWith("s=")){
                 val js = getPlayer(originalUrl)
                 if (js != null) {
-                    val urlDecoded = URLDecoder.decode(streamUrl, Charset.defaultCharset())
+                    val urlDecoded = URLDecoder.decode(URLDecoder.decode(streamUrl, Charset.defaultCharset()), Charset.defaultCharset())
                     val sig = urlDecoded.split("&sp=").first().removePrefix("s=")
                     val url = urlDecoded.split("&url=")[1]
                     val decodedSig = getSignature(js, sig)
@@ -169,8 +169,8 @@ object Youtube: Extractor() {
                     c = a[0]
                 }
             } else if (it.startsWith("a.splice(")) {
-                (0 until b).forEach{ num ->
-                    a.removeAt(num)
+                (0 until b).forEach{ _ ->
+                    a.removeAt(0)
                 }
             } else if (it.startsWith("a[0]")){
                 val value = it.split("=")[1]
