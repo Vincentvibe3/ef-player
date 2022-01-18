@@ -83,7 +83,6 @@ object Youtube: Extractor() {
                 val js = getPlayer(originalUrl)
                 if (js != null) {
                     val urlDecoded = URLDecoder.decode(URLDecoder.decode(streamUrl, Charset.defaultCharset()), Charset.defaultCharset())
-                    println(urlDecoded)
                     val sig = urlDecoded.split("&sp=").first().removePrefix("s=")
                     val url = urlDecoded.split("&url=")[1]
                     val decodedSig = getSignature(js, sig)
@@ -113,7 +112,6 @@ object Youtube: Extractor() {
     }
 
     fun getSignature(js:String, sig:String): String? {
-        println(sig)
         val array = sig.split("") as ArrayList
         array.removeFirst()
         array.removeLast()
@@ -128,7 +126,6 @@ object Youtube: Extractor() {
             if (classMatch != null) {
                 val classFuncs = classMatch.value.split(",\n")
                 classFuncs.forEach {
-                    println(it)
                     val splitNameBody = it.split(":")
                     val splitBody = splitNameBody[1].split("{")
                     val argCount = splitBody.first().split(",").size
@@ -147,7 +144,6 @@ object Youtube: Extractor() {
                             jsFn2Arg(array, args[1].toInt(), funcdata.first)
                         }
                     }
-                    println(array.joinToString(""))
                 }
             }
             return array.joinToString("")
