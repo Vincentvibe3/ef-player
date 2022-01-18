@@ -45,6 +45,7 @@ $dokka.location:com.github.Vincentvibe3.efplayer.extractors/Extractor/getTrack/#
 $dokka.location:com.github.Vincentvibe3.efplayer.extractors/Extractor/getUrlType/#kotlin.String/PointingToDeclaration/efplayer/com.github.Vincentvibe3.efplayer.extractors/-extractor/get-url-type.html
 $dokka.location:com.github.Vincentvibe3.efplayer.extractors/Youtube///PointingToDeclaration/efplayer/com.github.Vincentvibe3.efplayer.extractors/-youtube/index.html
 $dokka.location:com.github.Vincentvibe3.efplayer.extractors/Youtube/getPlaylistTracks/#kotlin.String/PointingToDeclaration/efplayer/com.github.Vincentvibe3.efplayer.extractors/-youtube/get-playlist-tracks.html
+$dokka.location:com.github.Vincentvibe3.efplayer.extractors/Youtube/getSignature/#kotlin.String#kotlin.String/PointingToDeclaration/efplayer/com.github.Vincentvibe3.efplayer.extractors/-youtube/get-signature.html
 $dokka.location:com.github.Vincentvibe3.efplayer.extractors/Youtube/getStream/#kotlin.String/PointingToDeclaration/efplayer/com.github.Vincentvibe3.efplayer.extractors/-youtube/get-stream.html
 $dokka.location:com.github.Vincentvibe3.efplayer.extractors/Youtube/getTrack/#kotlin.String/PointingToDeclaration/efplayer/com.github.Vincentvibe3.efplayer.extractors/-youtube/get-track.html
 $dokka.location:com.github.Vincentvibe3.efplayer.extractors/Youtube/getUrlType/#kotlin.String/PointingToDeclaration/efplayer/com.github.Vincentvibe3.efplayer.extractors/-youtube/get-url-type.html
