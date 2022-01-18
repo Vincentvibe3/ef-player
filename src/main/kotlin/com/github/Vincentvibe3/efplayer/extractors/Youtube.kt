@@ -22,10 +22,15 @@ object Youtube: Extractor() {
         val client = JSONObject()
             .put("clientName", "WEB")
             .put("clientVersion", "2.20220106.01.00")
+        val contentPlaybackContext = JSONObject()
+            .put("signatureTimestamp", 19005)
+        val playbackContext = JSONObject()
+            .put("contentPlaybackContext", contentPlaybackContext)
         context.put("client",client)
         params.forEach {
             topLevel.put(it.key, it.value)
         }
+        topLevel.put("playbackContext", playbackContext)
         topLevel.put("context", context)
         return topLevel.toString()
     }
@@ -78,6 +83,7 @@ object Youtube: Extractor() {
                 val js = getPlayer(originalUrl)
                 if (js != null) {
                     val urlDecoded = URLDecoder.decode(URLDecoder.decode(streamUrl, Charset.defaultCharset()), Charset.defaultCharset())
+                    println(urlDecoded)
                     val sig = urlDecoded.split("&sp=").first().removePrefix("s=")
                     val url = urlDecoded.split("&url=")[1]
                     val decodedSig = getSignature(js, sig)
@@ -106,7 +112,8 @@ object Youtube: Extractor() {
         return duration
     }
 
-    private fun getSignature(js:String, sig:String): String? {
+    fun getSignature(js:String, sig:String): String? {
+        println(sig)
         val array = sig.split("") as ArrayList
         array.removeFirst()
         array.removeLast()
@@ -121,6 +128,7 @@ object Youtube: Extractor() {
             if (classMatch != null) {
                 val classFuncs = classMatch.value.split(",\n")
                 classFuncs.forEach {
+                    println(it)
                     val splitNameBody = it.split(":")
                     val splitBody = splitNameBody[1].split("{")
                     val argCount = splitBody.first().split(",").size
@@ -139,6 +147,7 @@ object Youtube: Extractor() {
                             jsFn2Arg(array, args[1].toInt(), funcdata.first)
                         }
                     }
+                    println(array.joinToString(""))
                 }
             }
             return array.joinToString("")

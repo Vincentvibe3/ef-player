@@ -7,7 +7,7 @@ plugins {
 }
 
 group = "com.github.Vincentvibe3"
-version = "1.2.8"
+version = "1.2.9"
 
 repositories {
     mavenCentral()
@@ -26,7 +26,7 @@ tasks.test {
 
 
 tasks.withType<KotlinCompile> {
-    kotlinOptions.jvmTarget = "17"
+    kotlinOptions.jvmTarget = "11"
 }
 
 sourceSets {
