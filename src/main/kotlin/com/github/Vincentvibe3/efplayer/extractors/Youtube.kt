@@ -23,11 +23,11 @@ object Youtube: Extractor() {
             .put("clientName", "WEB")
             .put("clientVersion", "2.20220106.01.00")
         val contentPlaybackContext = JSONObject()
-            .put("signatureTimestamp", 19005)
+            .put("signatureTimestamp", params["signatureTimestamp"])
         val playbackContext = JSONObject()
             .put("contentPlaybackContext", contentPlaybackContext)
         context.put("client",client)
-        params.forEach {
+        params.filter { it.key != "signatureTimestamp" }.forEach {
             topLevel.put(it.key, it.value)
         }
         topLevel.put("playbackContext", playbackContext)
@@ -60,7 +60,7 @@ object Youtube: Extractor() {
         return Track(url, this, title, author, duration)
     }
 
-    private suspend fun getBestFormatStream(formats:JSONArray, originalUrl:String): String? {
+    private fun getBestFormatStream(formats:JSONArray, originalUrl:String, js:String): String? {
         var highestBitrate = -1L
         var streamUrl:String? = null
         for  (index in 0 until formats.length()){
@@ -80,15 +80,11 @@ object Youtube: Extractor() {
         }
         if (streamUrl != null) {
             if (streamUrl.startsWith("s=")){
-                val js = getPlayer(originalUrl)
-                if (js != null) {
-                    val urlDecoded = URLDecoder.decode(URLDecoder.decode(streamUrl, Charset.defaultCharset()), Charset.defaultCharset())
-                    val sig = urlDecoded.split("&sp=").first().removePrefix("s=")
-                    val url = urlDecoded.split("&url=")[1]
-                    val decodedSig = getSignature(js, sig)
-                    streamUrl = "$url&sig=$decodedSig"
-
-                }
+                val urlDecoded = URLDecoder.decode(URLDecoder.decode(streamUrl, Charset.defaultCharset()), Charset.defaultCharset())
+                val sig = urlDecoded.split("&sp=").first().removePrefix("s=")
+                val url = urlDecoded.split("&url=")[1]
+                val decodedSig = getSignature(js, sig)
+                streamUrl = "$url&sig=$decodedSig"
             }
         }
         return streamUrl
@@ -121,7 +117,7 @@ object Youtube: Extractor() {
         if (matches != null) {
             val functions = matches.value.split(";")
             val funcClass = functions.first().split(".").first()
-            val classPattern = "(?<=var $funcClass=\\{)(.*?)(?=};)".toRegex(RegexOption.DOT_MATCHES_ALL)
+            val classPattern = "(?<=var ${Regex.escape(funcClass)}=\\{)(.*?)(?=};)".toRegex(RegexOption.DOT_MATCHES_ALL)
             val classMatch = classPattern.find(js)
             if (classMatch != null) {
                 val classFuncs = classMatch.value.split(",\n")
@@ -206,17 +202,26 @@ object Youtube: Extractor() {
         return null
     }
 
+    private fun getSignatureTimestamp(js: String):String? {
+        val valuePattern = "(?<=signatureTimestamp:)\\d+".toRegex()
+        return valuePattern.find(js)?.value
+    }
+
     override suspend fun getStream(url:String):String?{
         val id = url.removePrefix("https://www.youtube.com/watch?v=")
-        val params = hashMapOf("videoId" to id)
-        val body = buildInnertubePostBody(params)
-        val response = RequestHandler.post("https://www.youtube.com/youtubei/v1/player?key=$INNERTUBE_API_KEY", body)
-        val jsonResponse = JSONObject(response)
-        if (jsonResponse.has("streamingData")){
-            val streamingData = jsonResponse.getJSONObject("streamingData")
-            if (streamingData.has("adaptiveFormats")){
-                val formats = streamingData.getJSONArray("adaptiveFormats")
-                return getBestFormatStream(formats, url)
+        val js = getPlayer(url)
+        val sigTimestamp = js?.let { getSignatureTimestamp(it) }
+        if (js!=null&&sigTimestamp!=null){
+            val params = hashMapOf("videoId" to id, "signatureTimestamp" to sigTimestamp)
+            val body = buildInnertubePostBody(params)
+            val response = RequestHandler.post("https://www.youtube.com/youtubei/v1/player?key=$INNERTUBE_API_KEY", body)
+            val jsonResponse = JSONObject(response)
+            if (jsonResponse.has("streamingData")){
+                val streamingData = jsonResponse.getJSONObject("streamingData")
+                if (streamingData.has("adaptiveFormats")){
+                    val formats = streamingData.getJSONArray("adaptiveFormats")
+                    return getBestFormatStream(formats, url, js)
+                }
             }
         }
         return null
