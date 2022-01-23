@@ -1,6 +1,9 @@
 $dokka.format:html-v1
 $dokka.linkExtension:html
 $dokka.location:com.github.Vincentvibe3.efplayer.core////PointingToDeclaration/efplayer/com.github.Vincentvibe3.efplayer.core/index.html
+$dokka.location:com.github.Vincentvibe3.efplayer.core/Config///PointingToDeclaration/efplayer/com.github.Vincentvibe3.efplayer.core/-config/index.html
+$dokka.location:com.github.Vincentvibe3.efplayer.core/Config/getMaxChunks/#/PointingToDeclaration/efplayer/com.github.Vincentvibe3.efplayer.core/-config/get-max-chunks.html
+$dokka.location:com.github.Vincentvibe3.efplayer.core/Config/maxOpusChunks/#/PointingToDeclaration/efplayer/com.github.Vincentvibe3.efplayer.core/-config/max-opus-chunks.html
 $dokka.location:com.github.Vincentvibe3.efplayer.core/EventListener///PointingToDeclaration/efplayer/com.github.Vincentvibe3.efplayer.core/-event-listener/index.html
 $dokka.location:com.github.Vincentvibe3.efplayer.core/EventListener/EventListener/#/PointingToDeclaration/efplayer/com.github.Vincentvibe3.efplayer.core/-event-listener/-event-listener.html
 $dokka.location:com.github.Vincentvibe3.efplayer.core/EventListener/onLoadFailed/#/PointingToDeclaration/efplayer/com.github.Vincentvibe3.efplayer.core/-event-listener/on-load-failed.html
