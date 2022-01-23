@@ -21,6 +21,10 @@ import kotlinx.coroutines.runBlocking
  */
 class Player(val eventListener: EventListener) {
 
+    init {
+        Config.getMaxChunks()
+    }
+
     /**
      * The active [Track]
      *
