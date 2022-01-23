@@ -9,12 +9,14 @@ object Config {
 
     fun getMaxChunks(){
         val file = File("efplayer.config.json")
-        val content =  file.bufferedReader()
-            .lines()
-            .toArray()
-            .joinToString("\n")
-        val json = JSONObject(content)
-        maxOpusChunks = json.getInt("maxChunks")
+        if (file.exists()){
+            val content =  file.bufferedReader()
+                .lines()
+                .toArray()
+                .joinToString("\n")
+            val json = JSONObject(content)
+            maxOpusChunks = json.getInt("maxChunks")
+        }
     }
 
 }
