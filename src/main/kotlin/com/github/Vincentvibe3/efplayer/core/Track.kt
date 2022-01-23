@@ -27,7 +27,7 @@ class Track(val url:String, val extractor: Extractor, val title:String?, val aut
      * The loaded chunks of audio as [ByteArray]
      *
      */
-    val trackChunks = LinkedBlockingQueue<ByteArray>(4000)
+    val trackChunks = LinkedBlockingQueue<ByteArray>(Config.maxOpusChunks)
 
     /**
      * Calls the extractor to get the track's streaming URL
