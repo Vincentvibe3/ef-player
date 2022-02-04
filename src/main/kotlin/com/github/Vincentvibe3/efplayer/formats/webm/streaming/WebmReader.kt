@@ -3,6 +3,7 @@ package com.github.Vincentvibe3.efplayer.formats.webm.streaming
 import com.github.Vincentvibe3.efplayer.formats.Result
 import com.github.Vincentvibe3.efplayer.core.Track
 import com.github.Vincentvibe3.efplayer.formats.Format
+import com.github.Vincentvibe3.efplayer.streaming.Stream
 import java.lang.RuntimeException
 
 import java.nio.ByteBuffer
@@ -15,7 +16,7 @@ import kotlin.experimental.and
  * Class to process a WEBM stream
  *
  */
-class WebmReader(private val track: Track):Format {
+class WebmReader(private val track: Track, override val stream: Stream): Format() {
 
     companion object {
 
@@ -31,6 +32,8 @@ class WebmReader(private val track: Track):Format {
             TAGS( 0x1254C367)
         }
 
+        private val conversionByteBuffer: ByteBuffer = ByteBuffer.allocate(8)
+
         /**
          *
          * Check if a file is an EBML document
@@ -42,6 +45,32 @@ class WebmReader(private val track: Track):Format {
             val ebmlId = 0x1A45DFA3
             val bytesInt = ByteBuffer.wrap(bytes).int
             return ebmlId == bytesInt
+        }
+
+        /**
+         *
+         * Read a Variable size integer as defined in the EBML specification
+         * @suppress
+         */
+        fun readVINTData(source:LinkedBlockingDeque<Byte>): Result<Long> {
+            val firstByte = source.removeFirst()
+            val vintWidth = firstByte.countLeadingZeroBits() + 1
+            val remainingBytes =  source.read(vintWidth - 1)
+            val longPadding = Long.SIZE_BYTES-(remainingBytes.size + 1)
+            val vint = ByteArray(Long.SIZE_BYTES)
+            val bitset = BitSet()
+            bitset.set(0, Byte.SIZE_BITS - vintWidth)
+            val filter = bitset.toByteArray()
+            if (filter.isEmpty()) {
+                vint[longPadding] = 0
+            } else {
+                vint[longPadding] = firstByte.and(filter[0])
+            }
+            System.arraycopy(remainingBytes, 0, vint, longPadding+1, remainingBytes.size)
+            conversionByteBuffer.clear()
+            val result = Result(vintWidth.toLong(), conversionByteBuffer.put(vint).flip().long)
+            conversionByteBuffer.clear()
+            return result
         }
 
     }
@@ -61,35 +90,7 @@ class WebmReader(private val track: Track):Format {
     private var currentStep = STEPS.GET_SIZE
     private var currentBlockLeft = -1L
     private var missingData = false
-    private val conversionByteBuffer: ByteBuffer = ByteBuffer.allocate(8)
     override val MINIMUM_BYTES_NEEDED = 8L
-
-
-    /**
-     *
-     * Read a Variable size integer as defined in the EBML specification
-     * @suppress
-     */
-    fun readVINTData(source:LinkedBlockingDeque<Byte>): Result<Long> {
-        val firstByte = source.removeFirst()
-        val vintWidth = firstByte.countLeadingZeroBits() + 1
-        val remainingBytes =  source.read(vintWidth - 1)
-        val longPadding = Long.SIZE_BYTES-(remainingBytes.size + 1)
-        val vint = ByteArray(Long.SIZE_BYTES)
-        val bitset = BitSet()
-        bitset.set(0, Byte.SIZE_BITS - vintWidth)
-        val filter = bitset.toByteArray()
-        if (filter.isEmpty()) {
-            vint[longPadding] = 0
-        } else {
-            vint[longPadding] = firstByte.and(filter[0])
-        }
-        System.arraycopy(remainingBytes, 0, vint, longPadding+1, remainingBytes.size)
-        conversionByteBuffer.clear()
-        val result = Result(vintWidth.toLong(), conversionByteBuffer.put(vint).flip().long)
-        conversionByteBuffer.clear()
-        return result
-    }
 
     /**
      * @suppress
@@ -170,7 +171,7 @@ class WebmReader(private val track: Track):Format {
                     val lacing = flags.and(0x06).rotateRight(1)
                     val opus = ByteArray(audioData.size-4)
                     System.arraycopy(audioData, 4, opus, 0, opus.size)
-                    track.trackChunks.put(opus)
+                    track.trackChunks.putToQueue(opus)
                     elementSize.value+elementSize.bytesRead
                 }
                 else -> {

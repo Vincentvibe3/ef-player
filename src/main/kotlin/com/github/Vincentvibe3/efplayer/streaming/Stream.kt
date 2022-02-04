@@ -36,6 +36,10 @@ class Stream(private val track: Track, private val eventListener: EventListener,
         isAlive.set(false)
     }
 
+    fun isRunning():Boolean{
+        return isAlive.get()
+    }
+
     private suspend fun startStreaming(url:String){
         val client = HttpClient(CIO)
         client.get<HttpStatement>(url){
@@ -66,7 +70,7 @@ class Stream(private val track: Track, private val eventListener: EventListener,
                 offset+=formatResult.bytesRead
                 val format = when (formatResult.value){
                     Formats.WEBM -> {
-                        WebmReader(track)
+                        WebmReader(track, this)
                     }
                 }
                 while (offset < contentLength!!) {
@@ -114,6 +118,7 @@ class Stream(private val track: Track, private val eventListener: EventListener,
      *
      */
     override fun run() {
+        println(Thread.currentThread().name)
         runBlocking {
             launch {
                 val url = track.getStream()
@@ -134,6 +139,7 @@ class Stream(private val track: Track, private val eventListener: EventListener,
         } else {
             eventListener.onTrackDone(track, player, false)
         }
+        Thread.currentThread().interrupt()
     }
 
 }
