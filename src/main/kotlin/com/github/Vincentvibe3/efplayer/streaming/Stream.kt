@@ -118,7 +118,6 @@ class Stream(private val track: Track, private val eventListener: EventListener,
      *
      */
     override fun run() {
-        println(Thread.currentThread().name)
         runBlocking {
             launch {
                 val url = track.getStream()
