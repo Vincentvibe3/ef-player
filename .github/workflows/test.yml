@@ -32,3 +32,11 @@ jobs:
     
     - name: Execute Gradle test
       run: ./gradlew test
+      
+    - name: Status webhook  
+      uses: sarisia/actions-status-discord@v1
+      if: always()
+      with:
+        webhook: ${{ secrets.DISCORD_WEBHOOK }}
+        title: "Release workflow"
+        username: GitHub Actions
