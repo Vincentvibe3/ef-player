@@ -48,7 +48,6 @@ $dokka.location:com.github.Vincentvibe3.efplayer.extractors/Extractor/getTrack/#
 $dokka.location:com.github.Vincentvibe3.efplayer.extractors/Extractor/getUrlType/#kotlin.String/PointingToDeclaration/efplayer/com.github.Vincentvibe3.efplayer.extractors/-extractor/get-url-type.html
 $dokka.location:com.github.Vincentvibe3.efplayer.extractors/Youtube///PointingToDeclaration/efplayer/com.github.Vincentvibe3.efplayer.extractors/-youtube/index.html
 $dokka.location:com.github.Vincentvibe3.efplayer.extractors/Youtube/getPlaylistTracks/#kotlin.String/PointingToDeclaration/efplayer/com.github.Vincentvibe3.efplayer.extractors/-youtube/get-playlist-tracks.html
-$dokka.location:com.github.Vincentvibe3.efplayer.extractors/Youtube/getSignature/#kotlin.String#kotlin.String/PointingToDeclaration/efplayer/com.github.Vincentvibe3.efplayer.extractors/-youtube/get-signature.html
 $dokka.location:com.github.Vincentvibe3.efplayer.extractors/Youtube/getStream/#kotlin.String/PointingToDeclaration/efplayer/com.github.Vincentvibe3.efplayer.extractors/-youtube/get-stream.html
 $dokka.location:com.github.Vincentvibe3.efplayer.extractors/Youtube/getTrack/#kotlin.String/PointingToDeclaration/efplayer/com.github.Vincentvibe3.efplayer.extractors/-youtube/get-track.html
 $dokka.location:com.github.Vincentvibe3.efplayer.extractors/Youtube/getUrlType/#kotlin.String/PointingToDeclaration/efplayer/com.github.Vincentvibe3.efplayer.extractors/-youtube/get-url-type.html
@@ -69,14 +68,19 @@ $dokka.location:com.github.Vincentvibe3.efplayer.formats.webm.streaming/WebmRead
 $dokka.location:com.github.Vincentvibe3.efplayer.formats.webm.streaming/WebmReader.Companion/checkIsEBML/#kotlin.ByteArray/PointingToDeclaration/efplayer/com.github.Vincentvibe3.efplayer.formats.webm.streaming/-webm-reader/-companion/check-is-e-b-m-l.html
 $dokka.location:com.github.Vincentvibe3.efplayer.formats.webm.streaming/WebmReader///PointingToDeclaration/efplayer/com.github.Vincentvibe3.efplayer.formats.webm.streaming/-webm-reader/index.html
 $dokka.location:com.github.Vincentvibe3.efplayer.formats.webm.streaming/WebmReader/MINIMUM_BYTES_NEEDED/#/PointingToDeclaration/efplayer/com.github.Vincentvibe3.efplayer.formats.webm.streaming/-webm-reader/-m-i-n-i-m-u-m_-b-y-t-e-s_-n-e-e-d-e-d.html
-$dokka.location:com.github.Vincentvibe3.efplayer.formats.webm.streaming/WebmReader/WebmReader/#com.github.Vincentvibe3.efplayer.core.Track/PointingToDeclaration/efplayer/com.github.Vincentvibe3.efplayer.formats.webm.streaming/-webm-reader/-webm-reader.html
+$dokka.location:com.github.Vincentvibe3.efplayer.formats.webm.streaming/WebmReader/WebmReader/#com.github.Vincentvibe3.efplayer.core.Track#com.github.Vincentvibe3.efplayer.streaming.Stream/PointingToDeclaration/efplayer/com.github.Vincentvibe3.efplayer.formats.webm.streaming/-webm-reader/-webm-reader.html
 $dokka.location:com.github.Vincentvibe3.efplayer.formats.webm.streaming/WebmReader/processNextBlock/#java.util.concurrent.LinkedBlockingDeque[kotlin.Byte]/PointingToDeclaration/efplayer/com.github.Vincentvibe3.efplayer.formats.webm.streaming/-webm-reader/process-next-block.html
+$dokka.location:com.github.Vincentvibe3.efplayer.formats.webm.streaming/WebmReader/stream/#/PointingToDeclaration/efplayer/com.github.Vincentvibe3.efplayer.formats.webm.streaming/-webm-reader/stream.html
 $dokka.location:com.github.Vincentvibe3.efplayer.formats////PointingToDeclaration/efplayer/com.github.Vincentvibe3.efplayer.formats/index.html
+$dokka.location:com.github.Vincentvibe3.efplayer.formats/Format.Companion///PointingToDeclaration/efplayer/com.github.Vincentvibe3.efplayer.formats/-format/-companion/index.html
+$dokka.location:com.github.Vincentvibe3.efplayer.formats/Format.Companion/read/java.util.concurrent.LinkedBlockingDeque[kotlin.Byte]#kotlin.Int/PointingToDeclaration/efplayer/com.github.Vincentvibe3.efplayer.formats/-format/-companion/read.html
+$dokka.location:com.github.Vincentvibe3.efplayer.formats/Format.Companion/skip/java.util.concurrent.LinkedBlockingDeque[kotlin.Byte]#kotlin.Int/PointingToDeclaration/efplayer/com.github.Vincentvibe3.efplayer.formats/-format/-companion/skip.html
 $dokka.location:com.github.Vincentvibe3.efplayer.formats/Format///PointingToDeclaration/efplayer/com.github.Vincentvibe3.efplayer.formats/-format/index.html
+$dokka.location:com.github.Vincentvibe3.efplayer.formats/Format/Format/#/PointingToDeclaration/efplayer/com.github.Vincentvibe3.efplayer.formats/-format/-format.html
 $dokka.location:com.github.Vincentvibe3.efplayer.formats/Format/MINIMUM_BYTES_NEEDED/#/PointingToDeclaration/efplayer/com.github.Vincentvibe3.efplayer.formats/-format/-m-i-n-i-m-u-m_-b-y-t-e-s_-n-e-e-d-e-d.html
 $dokka.location:com.github.Vincentvibe3.efplayer.formats/Format/processNextBlock/#java.util.concurrent.LinkedBlockingDeque[kotlin.Byte]/PointingToDeclaration/efplayer/com.github.Vincentvibe3.efplayer.formats/-format/process-next-block.html
-$dokka.location:com.github.Vincentvibe3.efplayer.formats/Format/read/java.util.concurrent.LinkedBlockingDeque[kotlin.Byte]#kotlin.Int/PointingToDeclaration/efplayer/com.github.Vincentvibe3.efplayer.formats/-format/read.html
-$dokka.location:com.github.Vincentvibe3.efplayer.formats/Format/skip/java.util.concurrent.LinkedBlockingDeque[kotlin.Byte]#kotlin.Int/PointingToDeclaration/efplayer/com.github.Vincentvibe3.efplayer.formats/-format/skip.html
+$dokka.location:com.github.Vincentvibe3.efplayer.formats/Format/putToQueue/java.util.concurrent.LinkedBlockingQueue[kotlin.ByteArray]#kotlin.ByteArray/PointingToDeclaration/efplayer/com.github.Vincentvibe3.efplayer.formats/-format/put-to-queue.html
+$dokka.location:com.github.Vincentvibe3.efplayer.formats/Format/stream/#/PointingToDeclaration/efplayer/com.github.Vincentvibe3.efplayer.formats/-format/stream.html
 $dokka.location:com.github.Vincentvibe3.efplayer.formats/Formats.WEBM///PointingToDeclaration/efplayer/com.github.Vincentvibe3.efplayer.formats/-formats/-w-e-b-m/index.html
 $dokka.location:com.github.Vincentvibe3.efplayer.formats/Formats///PointingToDeclaration/efplayer/com.github.Vincentvibe3.efplayer.formats/-formats/index.html
 $dokka.location:com.github.Vincentvibe3.efplayer.formats/Result///PointingToDeclaration/efplayer/com.github.Vincentvibe3.efplayer.formats/-result/index.html
@@ -90,6 +94,7 @@ $dokka.location:com.github.Vincentvibe3.efplayer.streaming/RequestHandler/post/#
 $dokka.location:com.github.Vincentvibe3.efplayer.streaming/RequestHandler/rateLimits/#/PointingToDeclaration/efplayer/com.github.Vincentvibe3.efplayer.streaming/-request-handler/rate-limits.html
 $dokka.location:com.github.Vincentvibe3.efplayer.streaming/Stream///PointingToDeclaration/efplayer/com.github.Vincentvibe3.efplayer.streaming/-stream/index.html
 $dokka.location:com.github.Vincentvibe3.efplayer.streaming/Stream/Stream/#com.github.Vincentvibe3.efplayer.core.Track#com.github.Vincentvibe3.efplayer.core.EventListener#com.github.Vincentvibe3.efplayer.core.Player/PointingToDeclaration/efplayer/com.github.Vincentvibe3.efplayer.streaming/-stream/-stream.html
+$dokka.location:com.github.Vincentvibe3.efplayer.streaming/Stream/isRunning/#/PointingToDeclaration/efplayer/com.github.Vincentvibe3.efplayer.streaming/-stream/is-running.html
 $dokka.location:com.github.Vincentvibe3.efplayer.streaming/Stream/run/#/PointingToDeclaration/efplayer/com.github.Vincentvibe3.efplayer.streaming/-stream/run.html
 $dokka.location:com.github.Vincentvibe3.efplayer.streaming/Stream/stop/#/PointingToDeclaration/efplayer/com.github.Vincentvibe3.efplayer.streaming/-stream/stop.html
 com.github.Vincentvibe3.efplayer.core
