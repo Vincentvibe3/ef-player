@@ -1,10 +1,13 @@
 package com.github.Vincentvibe3.efplayer.tests
 
+import com.github.Vincentvibe3.efplayer.core.EventListener
+import com.github.Vincentvibe3.efplayer.core.Player
 import com.github.Vincentvibe3.efplayer.core.Track
 import com.github.Vincentvibe3.efplayer.extractors.Youtube
 import com.github.Vincentvibe3.efplayer.formats.webm.legacy.EBMLHeader
 import com.github.Vincentvibe3.efplayer.formats.webm.legacy.WebmDocument
 import com.github.Vincentvibe3.efplayer.formats.webm.streaming.WebmReader
+import com.github.Vincentvibe3.efplayer.streaming.Stream
 import kotlinx.coroutines.runBlocking
 import java.io.ByteArrayInputStream
 import java.nio.file.Files
@@ -93,7 +96,9 @@ class Main {
     fun streamingCheckCluster(){
         val data = LinkedBlockingDeque<Byte>()
         data.addAll(byteArrayOf(0x1f.toByte(), 0x43.toByte(), 0xb6.toByte(), 0x75.toByte(), 0x15.toByte(), 0x49.toByte(), 0xa9.toByte(), 0x66.toByte()).toList())
-        val stream = WebmReader(Track("", Youtube, "", "", -1))
+        val track = Track("", Youtube, "", "", -1)
+        val eventListener = object :EventListener(){}
+        val stream = WebmReader(track, Stream(track, eventListener, Player(eventListener)))
         stream.getID(data)
         assert(stream.checkAtCluster())
         stream.getID(data)
@@ -103,7 +108,6 @@ class Main {
 
     @Test
     fun testVINTStreaming(){
-        val stream = WebmReader(Track("", Youtube, "", "", -1))
         println("\nChecking VINT parser...")
         val values = arrayOf(1L, 64L, 1345310L)
         val VINTs = ArrayList<ArrayList<Byte>>()
@@ -121,7 +125,7 @@ class Main {
         }
         VINTs.forEachIndexed { i, it ->
             runBlocking {
-                val long = stream.readVINTData(LinkedBlockingDeque(it))
+                val long = WebmReader.readVINTData(LinkedBlockingDeque(it))
                 println("VINT values(decoded|true value): ${long.value} | ${values[i]}")
                 assert(long.value==values[i])
             }
