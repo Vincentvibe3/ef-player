@@ -24,14 +24,6 @@ class Stream(private val eventListener: EventListener, private val player: Playe
 //    private val client = HttpClient(CIO)
     private val client2 = OkHttpClient();
 
-
-    private val executor = ThreadPoolExecutor(0,
-        Int.MAX_VALUE,
-        5,
-        TimeUnit.MINUTES,
-        LinkedBlockingQueue()
-    )
-
     lateinit var track:Track
 
     /**
@@ -83,7 +75,13 @@ class Stream(private val eventListener: EventListener, private val player: Playe
                         val readBytes = bytes.read(buffer)
                         offset += readBytes
                         data.write(buffer, readBytes)
-                        format.processNextBlock(data)
+                        try {
+                            format.processNextBlock(data)
+                        } catch (e:RuntimeException){
+                            response.close()
+                            call.cancel()
+                            throw e
+                        }
                     }
                     if (call.isCanceled()){
                         data.clear()
@@ -110,7 +108,8 @@ class Stream(private val eventListener: EventListener, private val player: Playe
     }
 
     fun startSong() {
-        executor.submit(this)
+//        ThreadManager.executor.submit(this)
+        ThreadManager.executor.execute(this)
     }
 
     /**
@@ -132,9 +131,8 @@ class Stream(private val eventListener: EventListener, private val player: Playe
                     try{
                         startStreaming(url)
                     } catch (e:Exception){
-                        println(e.message)
-                        println(e.stackTrace)
                         eventListener.onTrackError(track)
+                        e.printStackTrace()
                     }
                 }
             }
