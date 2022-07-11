@@ -46,6 +46,11 @@ class Stream(private val eventListener: EventListener, private val player: Playe
             .build()
         val call = client2.newCall(request)
         val response = call.execute()
+        if (!response.isSuccessful){
+            response.close()
+            call.cancel()
+            throw RuntimeException("Failed connection to stream")
+        }
         val clen = response.body?.contentLength()
         val bytes = response.body?.byteStream()
         var offset = 0L
@@ -94,6 +99,7 @@ class Stream(private val eventListener: EventListener, private val player: Playe
         while (track.trackChunks.isNotEmpty()){
             delay(100L)
         }
+        response.close()
     }
 
     private suspend fun getFormat2(response: InputStream): Result<Formats>?{
