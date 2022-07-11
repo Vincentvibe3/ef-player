@@ -39,18 +39,15 @@ class WebmDocument {
         genChunks()
         val segmentSize = readVINTData(input)
         var leftToRead = segmentSize.value
-        println(leftToRead)
         while (leftToRead>0L){
             val idBytes = input.readNBytes(4)
             leftToRead -= 4
             val id = ByteBuffer.wrap(idBytes).int
             val bytesRead = when (id){
                 IDS.CLUSTER.id -> {
-                    println("at cluster")
                     getCluster(input)
                 }
                 else -> {
-                    println("found other")
                     val size = readVINTData(input)
                     input.readNBytes(size.value.toInt())
                     size.value+size.bytesRead
@@ -63,8 +60,6 @@ class WebmDocument {
 
     fun getCluster(input:InputStream): Long{
         val size = readVINTData(input)
-//        println(size.value)
-//        input.readNBytes(size.value.toInt())
         var timestamp: Int? = null
         var leftToRead = size.value
         while (leftToRead>0L){
@@ -73,14 +68,12 @@ class WebmDocument {
             val id = ByteBuffer.wrap(byteArrayOf(0, 0, 0, idBytes[0])).int
             val bytesRead = when (id){
                 0xe7 -> {
-                    println("at timestamp")
                     val elementSize = readVINTData(input)
                     val int = ByteArray(4)
                     val timeStampData = input.readNBytes(elementSize.value.toInt())
                     val padding = Int.SIZE_BYTES-timeStampData.size
                     System.arraycopy(timeStampData, 0, int, padding, timeStampData.size)
                     timestamp = ByteBuffer.wrap(int).int
-                    println("${ByteBuffer.wrap(int).int} cluster ts")
                     elementSize.value+elementSize.bytesRead
                 }
                 0xa0 -> {
@@ -89,7 +82,6 @@ class WebmDocument {
                     elementSize.value+elementSize.bytesRead
                 }
                 else -> {
-                    println("found data")
                     val elementSize = readVINTData(input)
                     val audioData = input.readNBytes(elementSize.value.toInt())
                     val tracknumber = audioData[0]
@@ -97,8 +89,6 @@ class WebmDocument {
                     val flags = audioData[3]
                     val keyframe = flags.and(0x80.toByte())
                     val lacing = flags.and(0x06).rotateRight(1)
-                    println("${lacing.toUInt()} lacing")
-                    println(dataTimestamp)
                     val opus = ByteArray(audioData.size-4)
                     System.arraycopy(audioData, 4, opus, 0, opus.size)
                     if (timestamp != null) {

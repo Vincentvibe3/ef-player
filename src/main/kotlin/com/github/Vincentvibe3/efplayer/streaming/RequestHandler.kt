@@ -1,8 +1,6 @@
 package com.github.Vincentvibe3.efplayer.streaming
 
 import com.github.Vincentvibe3.efplayer.core.RequestFailedException
-import io.ktor.client.*
-import io.ktor.client.features.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -10,9 +8,8 @@ import java.net.URI
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.math.roundToLong
 import kotlin.properties.Delegates
-import io.ktor.client.request.*
-import io.ktor.client.statement.*
-import java.net.ConnectException
+import okhttp3.*
+import okhttp3.RequestBody.Companion.toRequestBody
 import java.net.URISyntaxException
 
 /**
@@ -26,7 +23,10 @@ object RequestHandler {
      * Custom rate-limiting for specific sites or endpoints
      *
      */
-    val rateLimits = HashMap<String, Long>()
+    private val rateLimits = HashMap<String, Long>()
+
+//    private val client = HttpClient()
+    private val client2 = OkHttpClient()
 
     private val mutex = Mutex()
 
@@ -60,30 +60,43 @@ object RequestHandler {
 
         var body = ""
         var success:Boolean
-        val client = HttpClient()
         try {
-            val response: HttpResponse = client.get(originalUrl){
-                headers {
-                    headers.forEach {
-                        append(it.key, it.value)
-                    }
-                }
+            val headersBuilder = Headers.Builder()
+            headers.forEach {
+                headersBuilder.add(it.key, it.value)
             }
-            body = response.readText()
+            val request: Request = Request.Builder()
+                .url(originalUrl)
+                .headers(headersBuilder.build())
+                .build()
+            val call = client2.newCall(request)
+            val response = call.execute()
+//            val response: HttpResponse = client.get(originalUrl){
+//                headers {
+//                    headers.forEach {
+//                        append(it.key, it.value)
+//                    }
+//                }
+//            }
+            body = response.body?.string() ?: ""
             success = true
-        } catch (e:ConnectException){
-            e.printStackTrace()
-            success = false
-        } catch (e:RedirectResponseException){
-            e.printStackTrace()
-            success = false
-        } catch (e:ClientRequestException){
-            e.printStackTrace()
-            success = false
-        } catch (e:ServerResponseException){
+        }catch (e:Exception){
             e.printStackTrace()
             success = false
         }
+//        } catch (e:ConnectException){
+//            e.printStackTrace()
+//            success = false
+//        } catch (e:RedirectResponseException){
+//            e.printStackTrace()
+//            success = false
+//        } catch (e:ClientRequestException){
+//            e.printStackTrace()
+//            success = false
+//        } catch (e:ServerResponseException){
+//            e.printStackTrace()
+//            success = false
+//        }
 
         if (!success){
             throw RequestFailedException()
@@ -123,31 +136,48 @@ object RequestHandler {
 
         var responseBody = ""
         var success:Boolean
-        val client = HttpClient()
+
         try {
-            val response: HttpResponse = client.post(originalUrl){
-                body = requestBody
-                headers {
-                    headers.forEach {
-                        append(it.key, it.value)
-                    }
-                }
+            val headersBuilder = Headers.Builder()
+            headers.forEach {
+                headersBuilder.add(it.key, it.value)
             }
-            responseBody = response.readText()
+            val body = requestBody.toRequestBody(null)
+            val request: Request = Request.Builder()
+                .url(originalUrl)
+                .headers(headersBuilder.build())
+                .post(body)
+                .build()
+            val call = client2.newCall(request)
+            val response = call.execute()
+//            val response: HttpResponse = client.post(originalUrl){
+//                body = requestBody
+//                headers {
+//                    headers.forEach {
+//                        append(it.key, it.value)
+//                    }
+//                }
+//            }
+//            responseBody = response.readText()
+            responseBody = response.body?.string() ?: ""
             success = true
-        } catch (e:ConnectException){
-            e.printStackTrace()
-            success = false
-        } catch (e:RedirectResponseException){
-            e.printStackTrace()
-            success = false
-        } catch (e:ClientRequestException){
-            e.printStackTrace()
-            success = false
-        } catch (e:ServerResponseException){
+        } catch (e:Exception){
             e.printStackTrace()
             success = false
         }
+//        } catch (e:ConnectException){
+//            e.printStackTrace()
+//            success = false
+//        } catch (e:RedirectResponseException){
+//            e.printStackTrace()
+//            success = false
+//        } catch (e:ClientRequestException){
+//            e.printStackTrace()
+//            success = false
+//        } catch (e:ServerResponseException){
+//            e.printStackTrace()
+//            success = false
+//        }
 
         if (!success){
             throw RequestFailedException()

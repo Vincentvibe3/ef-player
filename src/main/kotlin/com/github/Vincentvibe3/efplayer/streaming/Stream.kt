@@ -2,29 +2,37 @@ package com.github.Vincentvibe3.efplayer.streaming
 
 import com.github.Vincentvibe3.efplayer.core.EventListener
 import com.github.Vincentvibe3.efplayer.core.Player
-import com.github.Vincentvibe3.efplayer.formats.Result
 import com.github.Vincentvibe3.efplayer.core.Track
 import com.github.Vincentvibe3.efplayer.formats.Formats
+import com.github.Vincentvibe3.efplayer.formats.Result
 import com.github.Vincentvibe3.efplayer.formats.webm.streaming.WebmReader
-import io.ktor.client.*
-import io.ktor.client.engine.cio.*
-import io.ktor.client.features.*
-import io.ktor.client.request.*
-import io.ktor.client.statement.*
-import io.ktor.http.*
 import kotlinx.coroutines.*
-import java.lang.Runnable
+import okhttp3.*
+import java.io.InputStream
 import java.nio.ByteBuffer
-import java.util.concurrent.LinkedBlockingDeque
+import java.util.concurrent.*
 import java.util.concurrent.atomic.AtomicBoolean
 
-class Stream(private val track: Track, private val eventListener: EventListener, private val player: Player):Runnable {
+class Stream(private val eventListener: EventListener, private val player: Player):Runnable {
 
     private val FORMATS_ID_MAX_BYTES= 4
 
     private val data = LinkedBlockingDeque<Byte>()
 
     private val isAlive = AtomicBoolean(true)
+
+//    private val client = HttpClient(CIO)
+    private val client2 = OkHttpClient();
+
+
+    private val executor = ThreadPoolExecutor(0,
+        Int.MAX_VALUE,
+        5,
+        TimeUnit.MINUTES,
+        LinkedBlockingQueue()
+    )
+
+    lateinit var track:Track
 
     /**
      * Stop the streaming process
@@ -41,31 +49,24 @@ class Stream(private val track: Track, private val eventListener: EventListener,
     }
 
     private suspend fun startStreaming(url:String){
-        val client = HttpClient(CIO)
-        client.get<HttpStatement>(url){
-            headers{}
-        }.execute { httpResponse ->
-            val contentLength = httpResponse.contentLength()?.toInt()
-            var offset = 0L
-
-            /**
-
-             Steps:
-             1. Identify file type (for now only webm is supported)
-             2. Preprocess header and other information
-             3. Start writing clusters to output stream
-             4. Process other blocks if encountered otherwise return to step 2
-
-            */
-
-
-            fun LinkedBlockingDeque<Byte>.write(b:ByteArray) {
-                b.forEach {
+        val request: Request = Request.Builder()
+            .url(url)
+            .build()
+        val call = client2.newCall(request)
+        val response = call.execute()
+        val clen = response.body?.contentLength()
+        val bytes = response.body?.byteStream()
+        var offset = 0L
+        fun LinkedBlockingDeque<Byte>.write(b:ByteArray, toWrite: Int) {
+            val initSize = this.size
+            b.forEach {
+                if (this.size!=initSize+toWrite) {
                     this.add(it)
                 }
             }
-
-            val formatResult = getFormat(httpResponse)
+        }
+        if (bytes != null){
+            val formatResult = getFormat2(bytes)
             if (formatResult != null){
                 offset+=formatResult.bytesRead
                 val format = when (formatResult.value){
@@ -73,18 +74,18 @@ class Stream(private val track: Track, private val eventListener: EventListener,
                         WebmReader(track, this)
                     }
                 }
-                while (offset < contentLength!!) {
+                while (offset < clen!!) {
                     //set to stop stream and exit
                     if (!isAlive.get()){
-                        httpResponse.cancel()
+                        call.cancel()
                     } else {
-                        val canStream = httpResponse.content.availableForRead
-                        val bytes = httpResponse.readBytes(canStream)
-                        offset += canStream
-                        data.write(bytes)
+                        val buffer = ByteArray(4088)
+                        val readBytes = bytes.read(buffer)
+                        offset += readBytes
+                        data.write(buffer, readBytes)
                         format.processNextBlock(data)
                     }
-                    if (!httpResponse.isActive){
+                    if (call.isCanceled()){
                         data.clear()
                         track.trackChunks.clear()
                         break
@@ -97,15 +98,19 @@ class Stream(private val track: Track, private val eventListener: EventListener,
         }
     }
 
-    private suspend fun getFormat(response: HttpResponse): Result<Formats>?{
+    private suspend fun getFormat2(response: InputStream): Result<Formats>?{
 
         val buffer = ByteBuffer.wrap(ByteArray(FORMATS_ID_MAX_BYTES))
         //read from smallest amount to biggest
-        val webmBytes = buffer.put(response.readBytes(4))
+        val webmBytes = buffer.put(response.readNBytes(4))
         if (WebmReader.checkIsEBML(buffer.array())){
             return Result(4, Formats.WEBM)
         }
         return null
+    }
+
+    fun startSong() {
+        executor.submit(this)
     }
 
     /**
@@ -118,6 +123,7 @@ class Stream(private val track: Track, private val eventListener: EventListener,
      *
      */
     override fun run() {
+        isAlive.set(true)
         runBlocking {
             launch {
                 val url = track.getStream()
@@ -125,20 +131,21 @@ class Stream(private val track: Track, private val eventListener: EventListener,
                     eventListener.onTrackStart(track, player)
                     try{
                         startStreaming(url)
-                    } catch (e:ClientRequestException){
+                    } catch (e:Exception){
                         println(e.message)
                         println(e.stackTrace)
                         eventListener.onTrackError(track)
                     }
                 }
             }
+
         }
+
         if (isAlive.get()){
             eventListener.onTrackDone(track, player, true)
         } else {
             eventListener.onTrackDone(track, player, false)
         }
-        Thread.currentThread().interrupt()
     }
 
 }

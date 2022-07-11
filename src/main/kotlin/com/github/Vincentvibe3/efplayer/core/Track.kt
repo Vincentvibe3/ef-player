@@ -1,7 +1,6 @@
 package com.github.Vincentvibe3.efplayer.core
 
 import com.github.Vincentvibe3.efplayer.extractors.Extractor
-import io.ktor.utils.io.streams.*
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.PipedInputStream

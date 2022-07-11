@@ -98,7 +98,7 @@ class Main {
         data.addAll(byteArrayOf(0x1f.toByte(), 0x43.toByte(), 0xb6.toByte(), 0x75.toByte(), 0x15.toByte(), 0x49.toByte(), 0xa9.toByte(), 0x66.toByte()).toList())
         val track = Track("", Youtube, "", "", -1)
         val eventListener = object :EventListener(){}
-        val stream = WebmReader(track, Stream(track, eventListener, Player(eventListener)))
+        val stream = WebmReader(track, Stream(eventListener, Player(eventListener)))
         stream.getID(data)
         assert(stream.checkAtCluster())
         stream.getID(data)

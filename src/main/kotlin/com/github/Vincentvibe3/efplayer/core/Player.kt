@@ -4,6 +4,7 @@ import com.github.Vincentvibe3.efplayer.extractors.Extractor
 import com.github.Vincentvibe3.efplayer.extractors.Youtube
 import com.github.Vincentvibe3.efplayer.streaming.Stream
 import kotlinx.coroutines.runBlocking
+import org.slf4j.LoggerFactory
 
 
 /**
@@ -21,10 +22,6 @@ import kotlinx.coroutines.runBlocking
  */
 class Player(val eventListener: EventListener) {
 
-    init {
-        Config.getMaxChunks()
-    }
-
     /**
      * The active [Track]
      *
@@ -39,9 +36,13 @@ class Player(val eventListener: EventListener) {
      * @See Stream
      *
      */
-    private var stream: Stream? = null
+    private var stream: Stream = Stream(eventListener, this)
 
     var paused = false
+
+    init {
+        Config.getMaxChunks()
+    }
 
     /**
      * Load a [Track] from a query
@@ -99,8 +100,8 @@ class Player(val eventListener: EventListener) {
     fun play(track: Track){
         stop()
         currentTrack = track
-        stream = Stream(track, eventListener, this)
-        Thread(stream).start()
+        stream.track = currentTrack as Track
+        stream.startSong()
     }
 
     /**
@@ -114,9 +115,8 @@ class Player(val eventListener: EventListener) {
     fun stop(){
         //clear the track buffer to prevent blocking
         currentTrack?.trackChunks?.clear()
-        stream?.stop()
+        stream.stop()
         currentTrack = null
-        stream = null
     }
 
     /**
