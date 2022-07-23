@@ -40,7 +40,7 @@ class Player(val eventListener: EventListener) {
     var paused = false
 
     init {
-        Config.getMaxChunks()
+        Config.load()
     }
 
     /**

@@ -108,6 +108,7 @@ class Main {
 
     @Test
     fun testVINTStreaming(){
+        val stream = WebmReader(Track("", Youtube, "", "", -1))
         println("\nChecking VINT parser...")
         val values = arrayOf(1L, 64L, 1345310L)
         val VINTs = ArrayList<ArrayList<Byte>>()
