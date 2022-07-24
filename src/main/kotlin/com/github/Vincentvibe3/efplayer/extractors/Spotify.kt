@@ -23,9 +23,15 @@ object Spotify:Extractor() {
         val authString = Base64.getEncoder().encodeToString("${Config.spotifyClient}:${Config.spotifySecret}".toByteArray())
         val headers = hashMapOf("Authorization" to "Basic $authString", "Content-Type" to "application/x-www-form-urlencoded")
         val response = RequestHandler.post("https://accounts.spotify.com/api/token", requestBody, headers)
-        val jsonResponse = JSONObject(response)
-        Config.spotifyToken = jsonResponse.getString("access_token")
-        Config.spotifyTokenExpiry = System.currentTimeMillis()/1000+jsonResponse.getLong("expires_in")
+        try {
+            val jsonResponse = JSONObject(response)
+            Config.spotifyToken = jsonResponse.getString("access_token")
+            Config.spotifyTokenExpiry = System.currentTimeMillis()/1000+jsonResponse.getLong("expires_in")
+        }catch (e:JSONException){
+            println(response)
+            e.printStackTrace()
+        }
+
     }
 
     suspend fun getToken(): String {

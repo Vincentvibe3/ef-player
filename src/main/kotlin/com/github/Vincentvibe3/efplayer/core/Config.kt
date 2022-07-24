@@ -22,6 +22,12 @@ object Config {
             maxOpusChunks = json.getInt("maxChunks")
             spotifyClient = json.optString("spotifyClient")
             spotifySecret = json.optString("spotifySecret")
+            if (spotifyClient.isEmpty()){
+                spotifyClient = System.getenv("SPOTIFY_CLIENT")
+            }
+            if (spotifySecret.isEmpty()){
+                spotifySecret = System.getenv("SPOTIFY_SECRET")
+            }
         }
     }
 
