@@ -63,7 +63,7 @@ class Stream(private val eventListener: EventListener, private val player: Playe
             }
         }
         if (bytes != null){
-            val formatResult = getFormat2(bytes)
+            val formatResult = getFormat(bytes)
             if (formatResult != null){
                 offset+=formatResult.bytesRead
                 val format = when (formatResult.value){
@@ -102,7 +102,7 @@ class Stream(private val eventListener: EventListener, private val player: Playe
         response.close()
     }
 
-    private suspend fun getFormat2(response: InputStream): Result<Formats>?{
+    private fun getFormat(response: InputStream): Result<Formats>?{
 
         val buffer = ByteBuffer.wrap(ByteArray(FORMATS_ID_MAX_BYTES))
         //read from smallest amount to biggest
@@ -114,7 +114,6 @@ class Stream(private val eventListener: EventListener, private val player: Playe
     }
 
     fun startSong() {
-//        ThreadManager.executor.submit(this)
         ThreadManager.executor.execute(this)
     }
 
@@ -128,6 +127,7 @@ class Stream(private val eventListener: EventListener, private val player: Playe
      *
      */
     override fun run() {
+
         isAlive.set(true)
         runBlocking {
             launch {
@@ -144,7 +144,6 @@ class Stream(private val eventListener: EventListener, private val player: Playe
             }
 
         }
-
         if (isAlive.get()){
             eventListener.onTrackDone(track, player, true)
         } else {

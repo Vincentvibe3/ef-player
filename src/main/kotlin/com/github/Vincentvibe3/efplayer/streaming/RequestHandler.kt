@@ -11,6 +11,8 @@ import kotlin.properties.Delegates
 import okhttp3.*
 import okhttp3.RequestBody.Companion.toRequestBody
 import java.net.URISyntaxException
+import java.net.URLEncoder
+import java.nio.charset.Charset
 
 /**
  * Handles request while rate-limiting
@@ -43,10 +45,10 @@ object RequestHandler {
         } else {
             try {
                 URI(originalUrl).host
-            } catch (e:URISyntaxException){
+            } catch (e: URISyntaxException) {
                 e.printStackTrace()
                 throw RequestFailedException()
-            }
+            } ?: originalUrl
         }
         var queueTime by Delegates.notNull<Long>()
         //sync queue position fetching
@@ -122,7 +124,7 @@ object RequestHandler {
             } catch (e:URISyntaxException){
                 e.printStackTrace()
                 throw RequestFailedException()
-            }
+            }?: originalUrl
         }
         var queueTime by Delegates.notNull<Long>()
         //sync queue position fetching

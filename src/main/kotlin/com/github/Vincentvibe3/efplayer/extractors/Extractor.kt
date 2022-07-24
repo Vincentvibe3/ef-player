@@ -13,7 +13,7 @@ abstract class Extractor {
      *
      */
     enum class URL_TYPE {
-        TRACK, PLAYLIST, INVALID
+        TRACK, PLAYLIST, INVALID, ARTIST, ALBUM
     }
 
     /**
@@ -24,7 +24,7 @@ abstract class Extractor {
      * @return the URL of the resource requested
      *
      */
-    abstract suspend fun getStream(url:String):String?
+    abstract suspend fun getStream(url:String, track: Track):String?
 
     /**
      * create a [Track] from a URL to a resource
@@ -35,6 +35,30 @@ abstract class Extractor {
      *
      */
     abstract suspend fun getTrack(url: String): Track?
+
+    /**
+     * Gets [Tracks][Track] from an album
+     *
+     * @param url The URL where to find the album
+     *
+     * @return an empty list if no tracks could be created
+     *
+     */
+    open suspend fun getAlbumTracks(url: String):List<Track>{
+        return ArrayList()
+    }
+
+    /**
+     * Gets [Tracks][Track] from an artist
+     *
+     * @param url The URL where to find the artist
+     *
+     * @return an empty list if no tracks could be created
+     *
+     */
+    open suspend fun getArtistTracks(url: String):List<Track>{
+        return ArrayList()
+    }
 
     /**
      * Sort an input URL in different to extract differently
@@ -60,5 +84,7 @@ abstract class Extractor {
     open suspend fun getPlaylistTracks(url: String):List<Track>{
         return ArrayList()
     }
+
+    abstract suspend fun search(query: String): Track?
 
 }

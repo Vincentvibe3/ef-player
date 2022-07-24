@@ -250,7 +250,7 @@ object Youtube: Extractor() {
         return valuePattern.find(js)?.value
     }
 
-    override suspend fun getStream(url:String):String?{
+    override suspend fun getStream(url: String, track: Track): String? {
         val id = url.removePrefix("https://www.youtube.com/watch?v=")
         val js = getPlayer(url)
         val sigTimestamp = js?.let { getSignatureTimestamp(it) }
@@ -288,7 +288,7 @@ object Youtube: Extractor() {
      * @return A [Track] with the first found result. `null` if no result were found
      *
      */
-    suspend fun search(query:String):Track?{
+    override suspend fun search(query:String):Track?{
         val params = hashMapOf(
             "query" to query,
             "params" to "CAASAhAB"

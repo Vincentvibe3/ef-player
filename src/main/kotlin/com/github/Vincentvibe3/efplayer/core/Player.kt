@@ -1,6 +1,7 @@
 package com.github.Vincentvibe3.efplayer.core
 
 import com.github.Vincentvibe3.efplayer.extractors.Extractor
+import com.github.Vincentvibe3.efplayer.extractors.Spotify
 import com.github.Vincentvibe3.efplayer.extractors.Youtube
 import com.github.Vincentvibe3.efplayer.streaming.Stream
 import kotlinx.coroutines.runBlocking
@@ -29,18 +30,20 @@ class Player(val eventListener: EventListener) {
      */
     var currentTrack:Track? = null
 
-    /**
-     * The [Stream] Runnable that is providing audio
-     *
-     * @See Stream
-     *
-     */
-    private var stream: Stream = Stream(eventListener, this)
+    private var currentStream:Stream? = null
 
     var paused = false
 
     init {
         Config.load()
+    }
+
+    fun getExtractor(url:String): Extractor {
+        if (url.contains("open.spotify.com")){
+            return Spotify
+        } else {
+            return Youtube
+        }
     }
 
     /**
@@ -56,30 +59,47 @@ class Player(val eventListener: EventListener) {
     fun load(query:String){
         val player = this
         runBlocking {
-            val type = Youtube.getUrlType(query)
+            val extractor = getExtractor(query)
+            val type = extractor.getUrlType(query)
             when (type){
                 Extractor.URL_TYPE.TRACK->{
-                    val track = Youtube.getTrack(query)
+                    val track = extractor.getTrack(query)
                     if (track != null) {
                         eventListener.onTrackLoad(track, player)
                     } else {
-                        eventListener.onLoadFailed()
+                        eventListener.onLoadFailed("Cannot find track")
                     }
                 }
                 Extractor.URL_TYPE.PLAYLIST->{
-                    val tracks = Youtube.getPlaylistTracks(query)
+                    val tracks = extractor.getPlaylistTracks(query)
                     if (tracks.isNotEmpty()) {
                         eventListener.onPlaylistLoaded(tracks, player)
                     } else {
-                        eventListener.onLoadFailed()
+                        eventListener.onLoadFailed("Cannot find playlist")
                     }
                 }
                 Extractor.URL_TYPE.INVALID->{
-                    val track = Youtube.search(query)
+                    val track = extractor.search(query)
                     if (track != null) {
                         eventListener.onTrackLoad(track, player)
                     } else {
-                        eventListener.onLoadFailed()
+                        eventListener.onLoadFailed("Could not find match")
+                    }
+                }
+                Extractor.URL_TYPE.ALBUM ->{
+                    val tracks = extractor.getAlbumTracks(query)
+                    if (tracks.isNotEmpty()) {
+                        eventListener.onPlaylistLoaded(tracks, player)
+                    } else {
+                        eventListener.onLoadFailed("Cannot load album")
+                    }
+                }
+                Extractor.URL_TYPE.ARTIST -> {
+                    val tracks = extractor.getArtistTracks(query)
+                    if (tracks.isNotEmpty()) {
+                        eventListener.onPlaylistLoaded(tracks, player)
+                    } else {
+                        eventListener.onLoadFailed("Cannot load artist")
                     }
                 }
             }
@@ -98,9 +118,11 @@ class Player(val eventListener: EventListener) {
      */
     fun play(track: Track){
         stop()
-        currentTrack = track
-        stream.track = currentTrack as Track
+        val stream = Stream(eventListener, this)
+        stream.track = track
+        currentStream = stream
         stream.startSong()
+        currentTrack = track
     }
 
     /**
@@ -114,7 +136,7 @@ class Player(val eventListener: EventListener) {
     fun stop(){
         //clear the track buffer to prevent blocking
         currentTrack?.trackChunks?.clear()
-        stream.stop()
+        currentStream?.stop()
         currentTrack = null
     }
 

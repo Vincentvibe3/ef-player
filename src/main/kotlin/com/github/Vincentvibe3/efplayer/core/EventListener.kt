@@ -48,7 +48,7 @@ abstract class EventListener {
      * Called when a track fails to load
      *
      */
-    open fun onLoadFailed(){}
+    open fun onLoadFailed(reason:String){}
 
     /**
      * Called when a track is paused

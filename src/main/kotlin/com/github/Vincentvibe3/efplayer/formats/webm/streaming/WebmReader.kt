@@ -130,6 +130,10 @@ class WebmReader(private val track: Track, override val stream: Stream): Format(
             return
         }
         while (currentBlockLeft>0 && data.size>=9){
+            if (!stream.isRunning()){
+                missingData = true
+                return
+            }
             val idBytes = data.read(1)
             conversionByteBuffer.clear()
             val id = conversionByteBuffer.put(byteArrayOf(0, 0, 0, idBytes[0])).flip().int

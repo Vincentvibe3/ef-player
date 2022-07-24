@@ -20,7 +20,7 @@ import java.util.concurrent.LinkedTransferQueue
  * @see Player
  *
  */
-class Track(val url:String, val extractor: Extractor, val title:String?, val author:String?, val duration:Long) {
+class Track(var url:String, var extractor: Extractor, var title:String?, var author:String?, var duration:Long) {
 
     /**
      * The loaded chunks of audio as [ByteArray]
@@ -37,7 +37,7 @@ class Track(val url:String, val extractor: Extractor, val title:String?, val aut
      *
      */
     suspend fun getStream():String?{
-        return extractor.getStream(url)
+        return extractor.getStream(url, this)
     }
 
 }
