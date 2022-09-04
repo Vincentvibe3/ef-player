@@ -78,12 +78,12 @@ object Youtube: Extractor() {
         }
     }
 
-    override suspend fun getTrack(url:String): Track {
+    override suspend fun getTrack(url:String): Track? {
         var duration:Long = -1
         var title: String? = null
         var author: String? = null
-
-        val id = url.removePrefix("https://www.youtube.com/watch?v=")
+        val pattern = "(?<=https:\\/\\/www\\.youtube\\.com\\/watch\\?v=)(.*(?=&)|.*\$)".toRegex()
+        val id = pattern.find(url)?.groupValues?.get(0) ?: return null
         val params = hashMapOf("videoId" to id)
         val body = buildInnertubePostBody(params)
         val response = RequestHandler.post("https://www.youtube.com/youtubei/v1/player?key=$INNERTUBE_API_KEY", body)
@@ -251,7 +251,8 @@ object Youtube: Extractor() {
     }
 
     override suspend fun getStream(url: String, track: Track): String? {
-        val id = url.removePrefix("https://www.youtube.com/watch?v=")
+        val pattern = "(?<=https:\\/\\/www\\.youtube\\.com\\/watch\\?v=)(.*(?=&)|.*\$)".toRegex()
+        val id = pattern.find(url)?.groupValues?.get(0) ?: return null
         val js = getPlayer(url)
         val sigTimestamp = js?.let { getSignatureTimestamp(it) }
         if (js!=null&&sigTimestamp!=null){
