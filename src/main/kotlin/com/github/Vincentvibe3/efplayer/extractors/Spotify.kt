@@ -52,7 +52,7 @@ object Spotify:Extractor() {
      *
      */
     override suspend fun getStream(url: String, track: Track): String? {
-        val ytTrack = Youtube.search("${track.title} ${track.author}")
+        val ytTrack = Youtube.search("${track.title} ${track.author}", track.loadId)
         if (ytTrack != null) {
             track.author = ytTrack.author
             track.url = ytTrack.url
@@ -72,7 +72,7 @@ object Spotify:Extractor() {
      * @return The [Track] with the resource's information
      *
      */
-    override suspend fun getTrack(url: String): Track? {
+    override suspend fun getTrack(url: String, loadId: String): Track? {
         val id = url.removePrefix("https://open.spotify.com/track/").split("?")[0]
         val token = getToken()
         val headers = hashMapOf("Authorization" to "Bearer $token")
@@ -90,7 +90,7 @@ object Spotify:Extractor() {
                 }
                 val artistString = artistsList.joinToString(", ")
                 val title = jsonResponse.getString("name")
-                return Youtube.search("$title $artistString")
+                return Youtube.search("$title $artistString", loadId)
             }
         } catch (e:JSONException){
             e.printStackTrace()
@@ -123,7 +123,7 @@ object Spotify:Extractor() {
         }
     }
 
-    private fun parsePlaylistTracks(items:JSONArray, tracks:ArrayList<Track>) {
+    private fun parsePlaylistTracks(items: JSONArray, tracks: ArrayList<Track>, loadId: String) {
         for (index in 0 until items.length()){
             val track = items.getJSONObject(index).getJSONObject("track")
             val artistsList = ArrayList<String>()
@@ -136,7 +136,7 @@ object Spotify:Extractor() {
             val title = track.getString("name")
             val duration = track.getLong("duration_ms")
             val url = track.getJSONObject("external_urls").getString("spotify")
-            tracks.add(Track(url, Spotify, title, artistString, duration))
+            tracks.add(Track(url, Spotify, title, artistString, duration, loadId))
         }
     }
 
@@ -148,7 +148,7 @@ object Spotify:Extractor() {
      * @return an empty list if no tracks could be created
      *
      */
-    override suspend fun getPlaylistTracks(url: String): List<Track> {
+    override suspend fun getPlaylistTracks(url: String, loadId: String): List<Track> {
         val id = url.removePrefix("https://open.spotify.com/playlist/").split("?")[0]
         val token = getToken()
         val headers = hashMapOf("Authorization" to "Bearer $token")
@@ -168,7 +168,7 @@ object Spotify:Extractor() {
                     return tracks
                 } else {
                     val items = jsonResponse.getJSONArray("items")
-                    parsePlaylistTracks(items, tracks)
+                    parsePlaylistTracks(items, tracks, loadId)
                     if (jsonResponse.isNull("next")){
                         hasNext = false
                     } else {
@@ -187,7 +187,7 @@ object Spotify:Extractor() {
         return tracks
     }
 
-    override suspend fun search(query: String): Track? {
+    override suspend fun search(query: String, loadId: String): Track? {
         return null
     }
 

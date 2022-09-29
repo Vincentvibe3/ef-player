@@ -56,48 +56,48 @@ class Player(val eventListener: EventListener) {
      * @See EventListener.onTrackLoad
      *
      */
-    fun load(query:String){
+    fun load(query:String, loadId:String){
         val player = this
         runBlocking {
             val extractor = getExtractor(query)
             val type = extractor.getUrlType(query)
             when (type){
                 Extractor.URL_TYPE.TRACK->{
-                    val track = extractor.getTrack(query)
+                    val track = extractor.getTrack(query, loadId)
                     if (track != null) {
-                        eventListener.onTrackLoad(track, player)
+                        eventListener.onTrackLoad(track, player, loadId)
                     } else {
                         eventListener.onLoadFailed("Cannot find track")
                     }
                 }
                 Extractor.URL_TYPE.PLAYLIST->{
-                    val tracks = extractor.getPlaylistTracks(query)
+                    val tracks = extractor.getPlaylistTracks(query, loadId)
                     if (tracks.isNotEmpty()) {
-                        eventListener.onPlaylistLoaded(tracks, player)
+                        eventListener.onPlaylistLoaded(tracks, player, loadId)
                     } else {
                         eventListener.onLoadFailed("Cannot find playlist")
                     }
                 }
                 Extractor.URL_TYPE.INVALID->{
-                    val track = extractor.search(query)
+                    val track = extractor.search(query, loadId)
                     if (track != null) {
-                        eventListener.onTrackLoad(track, player)
+                        eventListener.onTrackLoad(track, player, loadId)
                     } else {
                         eventListener.onLoadFailed("Could not find match")
                     }
                 }
                 Extractor.URL_TYPE.ALBUM ->{
-                    val tracks = extractor.getAlbumTracks(query)
+                    val tracks = extractor.getAlbumTracks(query, loadId)
                     if (tracks.isNotEmpty()) {
-                        eventListener.onPlaylistLoaded(tracks, player)
+                        eventListener.onPlaylistLoaded(tracks, player, loadId)
                     } else {
                         eventListener.onLoadFailed("Cannot load album")
                     }
                 }
                 Extractor.URL_TYPE.ARTIST -> {
-                    val tracks = extractor.getArtistTracks(query)
+                    val tracks = extractor.getArtistTracks(query, loadId)
                     if (tracks.isNotEmpty()) {
-                        eventListener.onPlaylistLoaded(tracks, player)
+                        eventListener.onPlaylistLoaded(tracks, player, loadId)
                     } else {
                         eventListener.onLoadFailed("Cannot load artist")
                     }

@@ -1,12 +1,7 @@
 package com.github.Vincentvibe3.efplayer.core
 
 import com.github.Vincentvibe3.efplayer.extractors.Extractor
-import java.io.ByteArrayInputStream
-import java.io.ByteArrayOutputStream
-import java.io.PipedInputStream
-import java.io.PipedOutputStream
 import java.util.concurrent.LinkedBlockingQueue
-import java.util.concurrent.LinkedTransferQueue
 
 /**
  * A track for the [Player]
@@ -20,7 +15,14 @@ import java.util.concurrent.LinkedTransferQueue
  * @see Player
  *
  */
-class Track(var url:String, var extractor: Extractor, var title:String?, var author:String?, var duration:Long) {
+class Track(
+        var url:String,
+        var extractor: Extractor,
+        var title:String?,
+        var author:String?,
+        var duration:Long,
+        val loadId:String
+    ) {
 
     /**
      * The loaded chunks of audio as [ByteArray]

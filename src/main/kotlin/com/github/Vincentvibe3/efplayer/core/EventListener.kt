@@ -16,7 +16,7 @@ abstract class EventListener {
      * @param track The track that is loaded
      * @param player The Player that called the function
      */
-    open fun onTrackLoad(track: Track, player: Player){}
+    open fun onTrackLoad(track: Track, player: Player, loadId: String){}
 
     /**
      * Called when a playlist is loaded
@@ -24,7 +24,7 @@ abstract class EventListener {
      * @param tracks A list of Track that were loaded
      * @param player The Player that called the function
      */
-    open fun onPlaylistLoaded(tracks: List<Track>, player: Player){}
+    open fun onPlaylistLoaded(tracks: List<Track>, player: Player, loadId: String){}
 
     /**
      * Called when a track gets loaded

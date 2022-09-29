@@ -78,7 +78,7 @@ object Youtube: Extractor() {
         }
     }
 
-    override suspend fun getTrack(url:String): Track {
+    override suspend fun getTrack(url: String, loadId: String): Track? {
         var duration:Long = -1
         var title: String? = null
         var author: String? = null
@@ -100,7 +100,7 @@ object Youtube: Extractor() {
             title = details.getString("title")
             author = details.getString("author")
         }
-        return Track(url, this, title, author, duration)
+        return Track(url, this, title, author, duration, loadId)
     }
 
     private fun getBestFormatStream(formats: JSONArray, js: String): String? {
@@ -288,7 +288,7 @@ object Youtube: Extractor() {
      * @return A [Track] with the first found result. `null` if no result were found
      *
      */
-    override suspend fun search(query:String):Track?{
+    override suspend fun search(query: String, loadId: String): Track? {
         val params = hashMapOf(
             "query" to query,
             "params" to "CAASAhAB"
@@ -311,7 +311,7 @@ object Youtube: Extractor() {
                 if (result.has("videoRenderer")){
                     val resultInfo = result.getJSONObject("videoRenderer")
                     val id = resultInfo.getString("videoId")
-                    return getTrack("https://www.youtube.com/watch?v=$id")
+                    return getTrack("https://www.youtube.com/watch?v=$id", loadId)
                 }
 
             }
@@ -321,7 +321,7 @@ object Youtube: Extractor() {
         return null
     }
 
-    private suspend fun getPlaylistTracksNext(continuation:String, tracks:ArrayList<Track>){
+    private suspend fun getPlaylistTracksNext(continuation:String, tracks:ArrayList<Track>, loadId: String){
         val params = hashMapOf(
             "continuation" to continuation,
         )
@@ -350,19 +350,19 @@ object Youtube: Extractor() {
                         .getString("text")
 
                     val videoUrl = "https://www.youtube.com/watch?v=$videoId"
-                    tracks.add(Track(videoUrl, this, title, author, duration))
+                    tracks.add(Track(videoUrl, this, title, author, duration, loadId))
                 }
             } else if (item.has("continuationItemRenderer")) {
                 val token = item.getJSONObject("continuationItemRenderer")
                     .getJSONObject("continuationEndpoint")
                     .getJSONObject("continuationCommand")
                     .getString("token")
-                getPlaylistTracksNext(token, tracks)
+                getPlaylistTracksNext(token, tracks, loadId)
             }
         }
     }
 
-    override suspend fun getPlaylistTracks(url:String):List<Track>{
+    override suspend fun getPlaylistTracks(url: String, loadId: String): List<Track> {
         val id = url.removePrefix("https://www.youtube.com/playlist?list=")
         val params = hashMapOf(
             "browseId" to "VL$id",
@@ -404,14 +404,14 @@ object Youtube: Extractor() {
                         .getString("text")
 
                     val videoUrl = "https://www.youtube.com/watch?v=$videoId"
-                    tracks.add(Track(videoUrl, this, title, author, duration))
+                    tracks.add(Track(videoUrl, this, title, author, duration, loadId))
                 }
             } else if (item.has("continuationItemRenderer")) {
                 val token = item.getJSONObject("continuationItemRenderer")
                     .getJSONObject("continuationEndpoint")
                     .getJSONObject("continuationCommand")
                     .getString("token")
-                getPlaylistTracksNext(token, tracks)
+                getPlaylistTracksNext(token, tracks, loadId)
             }
         }
         return tracks

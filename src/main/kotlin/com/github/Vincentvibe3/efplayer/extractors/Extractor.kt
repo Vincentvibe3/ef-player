@@ -34,7 +34,7 @@ abstract class Extractor {
      * @return The [Track] with the resource's information
      *
      */
-    abstract suspend fun getTrack(url: String): Track?
+    abstract suspend fun getTrack(url: String, loadId:String): Track?
 
     /**
      * Gets [Tracks][Track] from an album
@@ -44,7 +44,7 @@ abstract class Extractor {
      * @return an empty list if no tracks could be created
      *
      */
-    open suspend fun getAlbumTracks(url: String):List<Track>{
+    open suspend fun getAlbumTracks(url: String, loadId:String):List<Track>{
         return ArrayList()
     }
 
@@ -56,7 +56,7 @@ abstract class Extractor {
      * @return an empty list if no tracks could be created
      *
      */
-    open suspend fun getArtistTracks(url: String):List<Track>{
+    open suspend fun getArtistTracks(url: String, loadId:String):List<Track>{
         return ArrayList()
     }
 
@@ -81,10 +81,10 @@ abstract class Extractor {
      * @return an empty list if no tracks could be created
      *
      */
-    open suspend fun getPlaylistTracks(url: String):List<Track>{
+    open suspend fun getPlaylistTracks(url: String, loadId:String):List<Track>{
         return ArrayList()
     }
 
-    abstract suspend fun search(query: String): Track?
+    abstract suspend fun search(query: String, loadId:String): Track?
 
 }
