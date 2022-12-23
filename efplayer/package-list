@@ -2,7 +2,6 @@ $dokka.format:html-v1
 $dokka.linkExtension:html
 $dokka.location:com.github.Vincentvibe3.efplayer.core////PointingToDeclaration/efplayer/com.github.Vincentvibe3.efplayer.core/index.html
 $dokka.location:com.github.Vincentvibe3.efplayer.core/Config///PointingToDeclaration/efplayer/com.github.Vincentvibe3.efplayer.core/-config/index.html
-$dokka.location:com.github.Vincentvibe3.efplayer.core/Config/load/#/PointingToDeclaration/efplayer/com.github.Vincentvibe3.efplayer.core/-config/load.html
 $dokka.location:com.github.Vincentvibe3.efplayer.core/Config/maxOpusChunks/#/PointingToDeclaration/efplayer/com.github.Vincentvibe3.efplayer.core/-config/max-opus-chunks.html
 $dokka.location:com.github.Vincentvibe3.efplayer.core/Config/spotifyClient/#/PointingToDeclaration/efplayer/com.github.Vincentvibe3.efplayer.core/-config/spotify-client.html
 $dokka.location:com.github.Vincentvibe3.efplayer.core/Config/spotifySecret/#/PointingToDeclaration/efplayer/com.github.Vincentvibe3.efplayer.core/-config/spotify-secret.html
