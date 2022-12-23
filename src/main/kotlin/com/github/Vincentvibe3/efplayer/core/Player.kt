@@ -34,10 +34,6 @@ class Player(val eventListener: EventListener) {
 
     var paused = false
 
-    init {
-        Config.load()
-    }
-
     fun getExtractor(url:String): Extractor {
         if (url.contains("open.spotify.com")){
             return Spotify

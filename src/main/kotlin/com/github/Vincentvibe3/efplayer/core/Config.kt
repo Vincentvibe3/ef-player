@@ -11,7 +11,7 @@ object Config {
     var spotifyToken:String = ""
     var spotifyTokenExpiry:Long = -1
 
-    fun load(){
+    init {
         val file = File("efplayer.config.json")
         if (file.exists()){
             val content =  file.bufferedReader()
