@@ -35,10 +35,10 @@ $dokka.location:com.github.Vincentvibe3.efplayer.core/Track/Track/#kotlin.String
 $dokka.location:com.github.Vincentvibe3.efplayer.core/Track/author/#/PointingToDeclaration/efplayer/com.github.Vincentvibe3.efplayer.core/-track/author.html
 $dokka.location:com.github.Vincentvibe3.efplayer.core/Track/duration/#/PointingToDeclaration/efplayer/com.github.Vincentvibe3.efplayer.core/-track/duration.html
 $dokka.location:com.github.Vincentvibe3.efplayer.core/Track/extractor/#/PointingToDeclaration/efplayer/com.github.Vincentvibe3.efplayer.core/-track/extractor.html
+$dokka.location:com.github.Vincentvibe3.efplayer.core/Track/getChunk/#/PointingToDeclaration/efplayer/com.github.Vincentvibe3.efplayer.core/-track/get-chunk.html
 $dokka.location:com.github.Vincentvibe3.efplayer.core/Track/getStream/#/PointingToDeclaration/efplayer/com.github.Vincentvibe3.efplayer.core/-track/get-stream.html
 $dokka.location:com.github.Vincentvibe3.efplayer.core/Track/loadId/#/PointingToDeclaration/efplayer/com.github.Vincentvibe3.efplayer.core/-track/load-id.html
 $dokka.location:com.github.Vincentvibe3.efplayer.core/Track/title/#/PointingToDeclaration/efplayer/com.github.Vincentvibe3.efplayer.core/-track/title.html
-$dokka.location:com.github.Vincentvibe3.efplayer.core/Track/trackChunks/#/PointingToDeclaration/efplayer/com.github.Vincentvibe3.efplayer.core/-track/track-chunks.html
 $dokka.location:com.github.Vincentvibe3.efplayer.core/Track/url/#/PointingToDeclaration/efplayer/com.github.Vincentvibe3.efplayer.core/-track/url.html
 $dokka.location:com.github.Vincentvibe3.efplayer.extractors////PointingToDeclaration/efplayer/com.github.Vincentvibe3.efplayer.extractors/index.html
 $dokka.location:com.github.Vincentvibe3.efplayer.extractors/Extractor.URL_TYPE.ALBUM///PointingToDeclaration/efplayer/com.github.Vincentvibe3.efplayer.extractors/-extractor/-u-r-l_-t-y-p-e/-a-l-b-u-m/index.html
@@ -98,6 +98,10 @@ $dokka.location:com.github.Vincentvibe3.efplayer.formats/Format/MINIMUM_BYTES_NE
 $dokka.location:com.github.Vincentvibe3.efplayer.formats/Format/processNextBlock/#java.util.concurrent.LinkedBlockingDeque[kotlin.Byte]/PointingToDeclaration/efplayer/com.github.Vincentvibe3.efplayer.formats/-format/process-next-block.html
 $dokka.location:com.github.Vincentvibe3.efplayer.formats/Format/putToQueue/java.util.concurrent.LinkedBlockingQueue[kotlin.ByteArray]#kotlin.ByteArray/PointingToDeclaration/efplayer/com.github.Vincentvibe3.efplayer.formats/-format/put-to-queue.html
 $dokka.location:com.github.Vincentvibe3.efplayer.formats/Format/stream/#/PointingToDeclaration/efplayer/com.github.Vincentvibe3.efplayer.formats/-format/stream.html
+$dokka.location:com.github.Vincentvibe3.efplayer.formats/FormatParseException///PointingToDeclaration/efplayer/com.github.Vincentvibe3.efplayer.formats/-format-parse-exception/index.html
+$dokka.location:com.github.Vincentvibe3.efplayer.formats/FormatParseException/FormatParseException/#com.github.Vincentvibe3.efplayer.formats.Formats#kotlin.String?/PointingToDeclaration/efplayer/com.github.Vincentvibe3.efplayer.formats/-format-parse-exception/-format-parse-exception.html
+$dokka.location:com.github.Vincentvibe3.efplayer.formats/FormatParseException/format/#/PointingToDeclaration/efplayer/com.github.Vincentvibe3.efplayer.formats/-format-parse-exception/format.html
+$dokka.location:com.github.Vincentvibe3.efplayer.formats/FormatParseException/message/#/PointingToDeclaration/efplayer/com.github.Vincentvibe3.efplayer.formats/-format-parse-exception/message.html
 $dokka.location:com.github.Vincentvibe3.efplayer.formats/Formats.WEBM///PointingToDeclaration/efplayer/com.github.Vincentvibe3.efplayer.formats/-formats/-w-e-b-m/index.html
 $dokka.location:com.github.Vincentvibe3.efplayer.formats/Formats///PointingToDeclaration/efplayer/com.github.Vincentvibe3.efplayer.formats/-formats/index.html
 $dokka.location:com.github.Vincentvibe3.efplayer.formats/Result///PointingToDeclaration/efplayer/com.github.Vincentvibe3.efplayer.formats/-result/index.html
@@ -105,16 +109,22 @@ $dokka.location:com.github.Vincentvibe3.efplayer.formats/Result/Result/#kotlin.L
 $dokka.location:com.github.Vincentvibe3.efplayer.formats/Result/bytesRead/#/PointingToDeclaration/efplayer/com.github.Vincentvibe3.efplayer.formats/-result/bytes-read.html
 $dokka.location:com.github.Vincentvibe3.efplayer.formats/Result/value/#/PointingToDeclaration/efplayer/com.github.Vincentvibe3.efplayer.formats/-result/value.html
 $dokka.location:com.github.Vincentvibe3.efplayer.streaming////PointingToDeclaration/efplayer/com.github.Vincentvibe3.efplayer.streaming/index.html
+$dokka.location:com.github.Vincentvibe3.efplayer.streaming/FailedResponseException///PointingToDeclaration/efplayer/com.github.Vincentvibe3.efplayer.streaming/-failed-response-exception/index.html
+$dokka.location:com.github.Vincentvibe3.efplayer.streaming/FailedResponseException/FailedResponseException/#kotlin.String/PointingToDeclaration/efplayer/com.github.Vincentvibe3.efplayer.streaming/-failed-response-exception/-failed-response-exception.html
 $dokka.location:com.github.Vincentvibe3.efplayer.streaming/RequestHandler///PointingToDeclaration/efplayer/com.github.Vincentvibe3.efplayer.streaming/-request-handler/index.html
 $dokka.location:com.github.Vincentvibe3.efplayer.streaming/RequestHandler/get/#kotlin.String#java.util.HashMap[kotlin.String,kotlin.String]/PointingToDeclaration/efplayer/com.github.Vincentvibe3.efplayer.streaming/-request-handler/get.html
 $dokka.location:com.github.Vincentvibe3.efplayer.streaming/RequestHandler/post/#kotlin.String#kotlin.String#java.util.HashMap[kotlin.String,kotlin.String]/PointingToDeclaration/efplayer/com.github.Vincentvibe3.efplayer.streaming/-request-handler/post.html
 $dokka.location:com.github.Vincentvibe3.efplayer.streaming/Stream///PointingToDeclaration/efplayer/com.github.Vincentvibe3.efplayer.streaming/-stream/index.html
 $dokka.location:com.github.Vincentvibe3.efplayer.streaming/Stream/Stream/#com.github.Vincentvibe3.efplayer.core.EventListener#com.github.Vincentvibe3.efplayer.core.Player/PointingToDeclaration/efplayer/com.github.Vincentvibe3.efplayer.streaming/-stream/-stream.html
 $dokka.location:com.github.Vincentvibe3.efplayer.streaming/Stream/isRunning/#/PointingToDeclaration/efplayer/com.github.Vincentvibe3.efplayer.streaming/-stream/is-running.html
+$dokka.location:com.github.Vincentvibe3.efplayer.streaming/Stream/logger/#/PointingToDeclaration/efplayer/com.github.Vincentvibe3.efplayer.streaming/-stream/logger.html
 $dokka.location:com.github.Vincentvibe3.efplayer.streaming/Stream/run/#/PointingToDeclaration/efplayer/com.github.Vincentvibe3.efplayer.streaming/-stream/run.html
 $dokka.location:com.github.Vincentvibe3.efplayer.streaming/Stream/startSong/#/PointingToDeclaration/efplayer/com.github.Vincentvibe3.efplayer.streaming/-stream/start-song.html
 $dokka.location:com.github.Vincentvibe3.efplayer.streaming/Stream/stop/#/PointingToDeclaration/efplayer/com.github.Vincentvibe3.efplayer.streaming/-stream/stop.html
 $dokka.location:com.github.Vincentvibe3.efplayer.streaming/Stream/track/#/PointingToDeclaration/efplayer/com.github.Vincentvibe3.efplayer.streaming/-stream/track.html
+$dokka.location:com.github.Vincentvibe3.efplayer.streaming/StreamFailureException///PointingToDeclaration/efplayer/com.github.Vincentvibe3.efplayer.streaming/-stream-failure-exception/index.html
+$dokka.location:com.github.Vincentvibe3.efplayer.streaming/StreamFailureException/StreamFailureException/#com.github.Vincentvibe3.efplayer.core.Track#kotlin.String/PointingToDeclaration/efplayer/com.github.Vincentvibe3.efplayer.streaming/-stream-failure-exception/-stream-failure-exception.html
+$dokka.location:com.github.Vincentvibe3.efplayer.streaming/StreamFailureException/track/#/PointingToDeclaration/efplayer/com.github.Vincentvibe3.efplayer.streaming/-stream-failure-exception/track.html
 $dokka.location:com.github.Vincentvibe3.efplayer.streaming/ThreadManager///PointingToDeclaration/efplayer/com.github.Vincentvibe3.efplayer.streaming/-thread-manager/index.html
 $dokka.location:com.github.Vincentvibe3.efplayer.streaming/ThreadManager/executor/#/PointingToDeclaration/efplayer/com.github.Vincentvibe3.efplayer.streaming/-thread-manager/executor.html
 com.github.Vincentvibe3.efplayer.core
