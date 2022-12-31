@@ -5,6 +5,7 @@ import com.github.Vincentvibe3.efplayer.core.Player
 import com.github.Vincentvibe3.efplayer.core.Track
 import com.github.Vincentvibe3.efplayer.extractors.Youtube
 import com.github.Vincentvibe3.efplayer.formats.Format
+import com.github.Vincentvibe3.efplayer.formats.Format.Companion.read
 import com.github.Vincentvibe3.efplayer.formats.FormatParseException
 import com.github.Vincentvibe3.efplayer.formats.Formats
 import com.github.Vincentvibe3.efplayer.formats.Result
@@ -14,7 +15,6 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import java.io.InputStream
 import java.nio.ByteBuffer
 import java.util.concurrent.LinkedBlockingDeque
 import java.util.concurrent.atomic.AtomicBoolean
@@ -58,7 +58,7 @@ class Stream(private val eventListener: EventListener, private val player: Playe
         return isAlive.get()
     }
 
-    private fun getContentLength(url:String): Long {
+    private suspend fun getContentLength(url:String): Long {
         for (retries in 0..3){
             val request: Request = Request.Builder()
                 .url(url)
@@ -70,14 +70,19 @@ class Stream(private val eventListener: EventListener, private val player: Playe
                 response.close()
                 call.cancel()
             } else {
-                val contentLength = response.headers["Content-Length"] ?: break
+                val contentLength = response.headers["Content-Length"]
+                response.close()
+                if (contentLength==null){
+                    break
+                }
                 return contentLength.toLong()
             }
+            delay(1000)
         }
         throw StreamFailureException(track, "Failed to get content length")
     }
 
-    private fun getBytes(url:String, rangeStart:Long, contentLength:Long): InputStream {
+    private suspend fun getBytes(url:String, rangeStart:Long, contentLength:Long): Int {
         val rangeEnd = rangeStart+min(contentLength-rangeStart, 4088)
         val request= if (track.extractor is Youtube){
             Request.Builder()
@@ -98,7 +103,13 @@ class Stream(private val eventListener: EventListener, private val player: Playe
         }
         val bytes = response.body?.byteStream()
         if (bytes!=null){
-            return bytes
+            val buffer = ByteArray(4088)
+            val readBytes = withContext(Dispatchers.IO) {
+                bytes.read(buffer)
+            }
+            data.write(buffer, readBytes)
+            response.close()
+            return readBytes
         }
         throw StreamFailureException(track, "Missing bytes")
     }
@@ -108,12 +119,13 @@ class Stream(private val eventListener: EventListener, private val player: Playe
         var firstRead=true
         lateinit var format:Format
         while (rangeStart < contentLength) {
-            var bytes:InputStream? = null
             var lastException:Exception?=null
+            var fetchOk = false
             for (retries in 0..3){
                 try {
-                   bytes=getBytes(url, rangeStart, contentLength)
-                   break
+                    rangeStart += getBytes(url, rangeStart, contentLength)
+                    fetchOk = true
+                    break
                 } catch (e:FailedResponseException){
                     logger.error("Failed to fetch ${track.url} at attempt $retries")
                     lastException=e
@@ -121,27 +133,20 @@ class Stream(private val eventListener: EventListener, private val player: Playe
                     logger.error("No bytes received from ${track.url} at attempt $retries")
                     lastException=e
                 }
+                delay(1000)
             }
-            if (bytes==null){
+            if (!fetchOk){
                 throw lastException ?: StreamFailureException(track, "Bytes were null")
             }
-            val buffer = ByteArray(4088)
             if (firstRead){
                 try{
-                    val formatInfo = getFormatReader(bytes)
-                    rangeStart+=formatInfo.second
-                    format = formatInfo.first
+                    format = getFormatReader(data)
                     firstRead=false
                 } catch (e: UnsupportedFormatException){
                     logger.error("${track.url} contains an unsupported format")
                     throw e
                 }
             }
-            val readBytes = withContext(Dispatchers.IO) {
-                bytes.read(buffer)
-            }
-            rangeStart += readBytes
-            data.write(buffer, readBytes)
             try {
                 format.processNextBlock(data)
             } catch (e: FormatParseException) {
@@ -149,13 +154,9 @@ class Stream(private val eventListener: EventListener, private val player: Playe
                 throw e
             }
         }
-        track.trackFullyStreamed = true
-        while (track.trackChunks.isNotEmpty()){
-            delay(100L)
-        }
     }
 
-    private fun getFormatReader(bytes:InputStream): Pair<Format, Long> {
+    private fun getFormatReader(bytes: LinkedBlockingDeque<Byte>): Format {
         val formatResult = getFormat(bytes)
         if (formatResult != null) {
             val format = when (formatResult.value) {
@@ -163,16 +164,16 @@ class Stream(private val eventListener: EventListener, private val player: Playe
                     WebmReader(track, this)
                 }
             }
-            return Pair(format, formatResult.bytesRead)
+            return format
         }
         throw UnsupportedFormatException()
     }
 
-    private fun getFormat(response: InputStream): Result<Formats>?{
+    private fun getFormat(response: LinkedBlockingDeque<Byte>): Result<Formats>?{
 
         val buffer = ByteBuffer.wrap(ByteArray(FORMATS_ID_MAX_BYTES))
         //read from the smallest amount to the biggest
-        val webmBytes = buffer.put(response.readNBytes(4))
+        val webmBytes = buffer.put(response.read(4))
         if (WebmReader.checkIsEBML(buffer.array())){
             return Result(4, Formats.WEBM)
         }
@@ -193,7 +194,6 @@ class Stream(private val eventListener: EventListener, private val player: Playe
      *
      */
     override fun run() {
-
         isAlive.set(true)
         runBlocking {
             launch {
@@ -205,15 +205,12 @@ class Stream(private val eventListener: EventListener, private val player: Playe
                     } catch (e:Exception){
                         eventListener.onTrackError(track)
                         e.printStackTrace()
+                    } finally {
+                        track.trackFullyStreamed = true
                     }
                 }
             }
 
-        }
-        if (isAlive.get()){
-            eventListener.onTrackDone(track, player, true)
-        } else {
-            eventListener.onTrackDone(track, player, false)
         }
     }
 

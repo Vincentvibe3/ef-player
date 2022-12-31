@@ -131,7 +131,13 @@ class Player(val eventListener: EventListener) {
      */
     fun stop(){
         //clear the track buffer to prevent blocking
-        currentTrack?.trackChunks?.clear()
+        val trackToStop = currentTrack
+        if (trackToStop!=null){
+            eventListener.onTrackDone(trackToStop,this,false)
+            currentTrack?.trackChunks?.clear()
+            trackToStop.trackFullyStreamed = false
+            trackToStop.started = false
+        }
         currentStream?.stop()
         currentTrack = null
     }
@@ -169,7 +175,11 @@ class Player(val eventListener: EventListener) {
      *
      */
     fun provide(): ByteArray {
-        return currentTrack!!.trackChunks.remove()
+        val chunkInfo = currentTrack!!.getChunk()
+        if (chunkInfo.second){
+            eventListener.onTrackDone(currentTrack!!, this, true)
+        }
+        return chunkInfo.first
     }
 
     /**

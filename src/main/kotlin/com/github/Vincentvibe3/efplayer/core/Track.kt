@@ -24,25 +24,31 @@ class Track(
         val loadId:String
     ) {
 
-    private var started = false
+    internal var started = false
 
     /**
      * The loaded chunks of audio as [ByteArray]
      *
      */
-    val trackChunks = LinkedBlockingQueue<ByteArray>(Config.maxOpusChunks)
+    internal val trackChunks = LinkedBlockingQueue<ByteArray>(Config.maxOpusChunks)
     internal var trackFullyStreamed = false
 
-    fun getChunk(): ByteArray? {
-        if (!started){
+
+    /**
+     * returns a pair containing a chunk and whether it is the last
+     */
+    fun getChunk(): Pair<ByteArray, Boolean> {
+        return if (!started){
             started=true
-            return trackChunks.remove()
+            Pair(trackChunks.remove(), false)
         } else {
             if (trackChunks.size == 1 && trackFullyStreamed){
                 started = false
                 trackFullyStreamed = false
+                Pair(trackChunks.remove(), true)
+            } else {
+                Pair(trackChunks.remove(), false)
             }
-            return trackChunks.remove()
         }
     }
 
