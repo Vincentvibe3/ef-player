@@ -1,4 +1,4 @@
-package com.github.Vincentvibe3.efplayer.core
+package com.github.Vincentvibe3.efplayer.streaming
 
 /**
  * @suppress

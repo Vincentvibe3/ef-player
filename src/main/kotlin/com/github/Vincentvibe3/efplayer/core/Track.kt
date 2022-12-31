@@ -24,11 +24,27 @@ class Track(
         val loadId:String
     ) {
 
+    private var started = false
+
     /**
      * The loaded chunks of audio as [ByteArray]
      *
      */
     val trackChunks = LinkedBlockingQueue<ByteArray>(Config.maxOpusChunks)
+    internal var trackFullyStreamed = false
+
+    fun getChunk(): ByteArray? {
+        if (!started){
+            started=true
+            return trackChunks.remove()
+        } else {
+            if (trackChunks.size == 1 && trackFullyStreamed){
+                started = false
+                trackFullyStreamed = false
+            }
+            return trackChunks.remove()
+        }
+    }
 
     /**
      * Calls the extractor to get the track's streaming URL

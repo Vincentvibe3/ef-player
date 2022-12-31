@@ -3,6 +3,8 @@ package com.github.Vincentvibe3.efplayer.formats.webm.streaming
 import com.github.Vincentvibe3.efplayer.formats.Result
 import com.github.Vincentvibe3.efplayer.core.Track
 import com.github.Vincentvibe3.efplayer.formats.Format
+import com.github.Vincentvibe3.efplayer.formats.FormatParseException
+import com.github.Vincentvibe3.efplayer.formats.Formats
 import com.github.Vincentvibe3.efplayer.streaming.Stream
 import java.lang.RuntimeException
 
@@ -179,7 +181,7 @@ class WebmReader(private val track: Track, override val stream: Stream): Format(
                     elementSize.value+elementSize.bytesRead
                 }
                 else -> {
-                    throw RuntimeException("Found invalid block in cluster")
+                    throw FormatParseException(Formats.WEBM, "Found invalid block in cluster")
                 }
             }
             currentBlockLeft-=bytesRead

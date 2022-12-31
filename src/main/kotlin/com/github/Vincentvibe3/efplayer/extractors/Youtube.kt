@@ -1,6 +1,6 @@
 package com.github.Vincentvibe3.efplayer.extractors
 
-import com.github.Vincentvibe3.efplayer.core.RequestFailedException
+import com.github.Vincentvibe3.efplayer.streaming.RequestFailedException
 import com.github.Vincentvibe3.efplayer.streaming.RequestHandler
 import com.github.Vincentvibe3.efplayer.core.Track
 import org.json.JSONArray
@@ -54,7 +54,7 @@ object Youtube: Extractor() {
             val version = fetchVersion() ?: return default
             cacheClientVersion(version)
             return version
-        } catch (e:RequestFailedException){
+        } catch (e: RequestFailedException){
             return default
         }
     }

@@ -1,6 +1,5 @@
 package com.github.Vincentvibe3.efplayer.streaming
 
-import com.github.Vincentvibe3.efplayer.core.RequestFailedException
 import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -11,11 +10,12 @@ import kotlin.properties.Delegates
 import okhttp3.*
 import okhttp3.RequestBody.Companion.toRequestBody
 import java.net.URISyntaxException
-import java.net.URLEncoder
-import java.nio.charset.Charset
 
 /**
  * Handles request while rate-limiting
+ * Used for fetching metadata in extractors
+ *
+ * See [Stream] for requests made to fetch audio
  */
 object RequestHandler {
 
@@ -28,7 +28,7 @@ object RequestHandler {
     private val rateLimits = HashMap<String, Long>()
 
 //    private val client = HttpClient()
-    private val client2 = OkHttpClient()
+    private val client = OkHttpClient()
 
     private val mutex = Mutex()
 
@@ -71,7 +71,7 @@ object RequestHandler {
                 .url(originalUrl)
                 .headers(headersBuilder.build())
                 .build()
-            val call = client2.newCall(request)
+            val call = client.newCall(request)
             val response = call.execute()
 //            val response: HttpResponse = client.get(originalUrl){
 //                headers {
@@ -150,7 +150,7 @@ object RequestHandler {
                 .headers(headersBuilder.build())
                 .post(body)
                 .build()
-            val call = client2.newCall(request)
+            val call = client.newCall(request)
             val response = call.execute()
 //            val response: HttpResponse = client.post(originalUrl){
 //                body = requestBody

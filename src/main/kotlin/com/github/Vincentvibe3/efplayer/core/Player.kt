@@ -173,7 +173,7 @@ class Player(val eventListener: EventListener) {
     }
 
     /**
-     * Whether or not the the player has audio to provide with [provide]
+     * Whether the player has audio to provide with [provide]
      *
      * @return `true` if the track has audio
      *
