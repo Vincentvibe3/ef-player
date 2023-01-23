@@ -82,8 +82,8 @@ object Youtube: Extractor() {
         var duration:Long = -1
         var title: String? = null
         var author: String? = null
-
-        val id = url.removePrefix("https://www.youtube.com/watch?v=")
+        val idRegex = "http.?:\\/\\/www\\.youtube\\.com\\/watch\\?v=(.*?)(?>&|\$)".toRegex()
+        val id = idRegex.find(url)?.groupValues?.first { !it.contains("www.youtube.com") } ?: return null
         val params = hashMapOf("videoId" to id)
         val body = buildInnertubePostBody(params)
         val response = RequestHandler.post("https://www.youtube.com/youtubei/v1/player?key=$INNERTUBE_API_KEY", body)
@@ -251,7 +251,8 @@ object Youtube: Extractor() {
     }
 
     override suspend fun getStream(url: String, track: Track): String? {
-        val id = url.removePrefix("https://www.youtube.com/watch?v=")
+        val idRegex = "http.?:\\/\\/www\\.youtube\\.com\\/watch\\?v=(.*?)(?>&|\$)".toRegex()
+        val id = idRegex.find(url)?.groupValues?.first { !it.contains("www.youtube.com") } ?: return null
         val js = getPlayer(url)
         val sigTimestamp = js?.let { getSignatureTimestamp(it) }
         if (js!=null&&sigTimestamp!=null){
@@ -315,8 +316,6 @@ object Youtube: Extractor() {
                 }
 
             }
-
-
         }
         return null
     }
@@ -363,7 +362,8 @@ object Youtube: Extractor() {
     }
 
     override suspend fun getPlaylistTracks(url: String, loadId: String): List<Track> {
-        val id = url.removePrefix("https://www.youtube.com/playlist?list=")
+        val idRegex = "http.?:\\/\\/www\\.youtube\\.com\\/playlist\\?list=(.*?)(?>&|\$)".toRegex()
+        val id = idRegex.find(url)?.groupValues?.first { !it.contains("www.youtube.com") } ?: return ArrayList()
         val params = hashMapOf(
             "browseId" to "VL$id",
             "params" to "wgYCCAA="
