@@ -127,7 +127,7 @@ class Stream(private val eventListener: EventListener, private val player: Playe
                 if (retries==3){
                     throw e
                 }
-                logger.error("Failed to fetch content length from ${track.url}@$url at attempt $retries")
+                logger.error("Failed to fetch content length from ${track.url} @ $url at attempt $retries")
                 url = track.getStream() ?: ""
             }
             delay(1000)

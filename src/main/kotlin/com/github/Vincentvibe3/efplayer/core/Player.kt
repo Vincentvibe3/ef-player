@@ -179,7 +179,6 @@ class Player(val eventListener: EventListener) {
     fun provide(): ByteArray {
         val chunkInfo = currentTrack!!.getChunk()
         if (chunkInfo.second){
-            println("track complete")
             eventListener.onTrackDone(currentTrack!!, this, true)
         }
         return chunkInfo.first
