@@ -29,7 +29,7 @@ class Stream(private val eventListener: EventListener, private val player: Playe
     private val isAlive = AtomicBoolean(true)
 
 //    private val client = HttpClient(CIO)
-    private val client = OkHttpClient();
+    private val client = OkHttpClient()
 
     lateinit var track:Track
 
@@ -59,6 +59,7 @@ class Stream(private val eventListener: EventListener, private val player: Playe
     }
 
     private suspend fun getContentLength(url:String): Long {
+        var failureReason = ""
         for (retries in 0..3){
             val request: Request = Request.Builder()
                 .url(url)
@@ -69,17 +70,19 @@ class Stream(private val eventListener: EventListener, private val player: Playe
             if (!response.isSuccessful){
                 response.close()
                 call.cancel()
+                failureReason = "failed request"
             } else {
                 val contentLength = response.headers["Content-Length"]
                 response.close()
                 if (contentLength==null){
-                    break
+                    failureReason = "no header found"
+                    continue
                 }
                 return contentLength.toLong()
             }
             delay(1000)
         }
-        throw StreamFailureException(track, "Failed to get content length")
+        throw StreamFailureException(track, "Failed to get content length with reason: $failureReason")
     }
 
     private suspend fun getBytes(url:String, rangeStart:Long, contentLength:Long): Int {
@@ -113,8 +116,22 @@ class Stream(private val eventListener: EventListener, private val player: Playe
         }
         throw StreamFailureException(track, "Missing bytes")
     }
-    private suspend fun startStreaming(url:String){
-        val contentLength = getContentLength(url)
+    private suspend fun startStreaming(initUrl:String){
+        var url = initUrl
+        var contentLength=-1L
+        for (retries in 0..3){
+            try {
+                contentLength=getContentLength(url)
+                break
+            } catch (e:StreamFailureException){
+                if (retries==3){
+                    throw e
+                }
+                logger.error("Failed to fetch content length from ${track.url}@$url at attempt $retries")
+                url = track.getStream() ?: ""
+            }
+            delay(1000)
+        }
         var rangeStart = 0L
         var firstRead=true
         lateinit var format:Format
