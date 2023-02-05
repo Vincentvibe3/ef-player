@@ -5,6 +5,11 @@ import com.github.Vincentvibe3.efplayer.extractors.Spotify
 import com.github.Vincentvibe3.efplayer.extractors.Youtube
 import com.github.Vincentvibe3.efplayer.streaming.Stream
 import kotlinx.coroutines.runBlocking
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.json.Json
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+import java.io.File
 
 
 /**
@@ -21,6 +26,42 @@ import kotlinx.coroutines.runBlocking
  *
  */
 class Player(val eventListener: EventListener) {
+
+    constructor(eventListener: EventListener, passedConfig: Config) : this(eventListener) {
+        config.spotifyClient = passedConfig.spotifyClient
+        config.maxOpusChunks = passedConfig.maxOpusChunks
+        config.spotifyToken = passedConfig.spotifyToken
+        config.spotifyTokenExpiry = passedConfig.spotifyTokenExpiry
+        config.spotifySecret = passedConfig.spotifySecret
+    }
+    companion object {
+
+        val logger: Logger = LoggerFactory.getLogger("ef-player")
+
+        val config:Config by lazy {
+            loadConfig()
+        }
+
+        private fun loadConfig(): Config {
+            var newConfig = Config()
+            val file = File("efplayer.config.json")
+            if (file.exists()) {
+                val content = file.bufferedReader()
+                    .lines()
+                    .toArray()
+                    .joinToString("\n")
+                newConfig = Json.decodeFromString(content)
+            }
+            if (newConfig.spotifyClient.isEmpty()) {
+                newConfig.spotifyClient = System.getenv("SPOTIFY_CLIENT")?:""
+            }
+            if (newConfig.spotifySecret.isEmpty()) {
+                newConfig.spotifySecret = System.getenv("SPOTIFY_SECRET")?:""
+            }
+            return newConfig
+        }
+
+    }
 
     /**
      * The active [Track]

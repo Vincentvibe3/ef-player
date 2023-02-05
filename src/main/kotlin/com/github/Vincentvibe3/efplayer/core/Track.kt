@@ -30,7 +30,7 @@ class Track(
      * The loaded chunks of audio as [ByteArray]
      *
      */
-    internal val trackChunks = LinkedBlockingQueue<ByteArray>(Config.maxOpusChunks)
+    internal val trackChunks = LinkedBlockingQueue<ByteArray>(Player.config.maxOpusChunks)
     internal var trackFullyStreamed = false
 
 

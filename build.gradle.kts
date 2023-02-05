@@ -1,13 +1,14 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    kotlin("jvm") version "1.6.10"
+    kotlin("jvm") version "1.8.0"
     id("org.jetbrains.dokka") version "1.6.10"
+    kotlin("plugin.serialization") version "1.8.0"
     `maven-publish`
 }
 
 group = "com.github.Vincentvibe3"
-version = "1.3.11"
+version = "1.3.12"
 
 repositories {
     mavenCentral()
@@ -16,8 +17,8 @@ repositories {
 dependencies {
     testImplementation(kotlin("test"))
     implementation("com.squareup.okhttp3:okhttp:4.10.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.0-RC")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
-    implementation("org.json:json:20220320")
     api("org.slf4j:slf4j-api:2.0.0")
 }
 
@@ -106,9 +107,9 @@ tasks.withType<PublishToMavenLocal>{
 }
 val compileKotlin: KotlinCompile by tasks
 compileKotlin.kotlinOptions {
-    jvmTarget = "1.8"
+    jvmTarget = "11"
 }
 val compileTestKotlin: KotlinCompile by tasks
 compileTestKotlin.kotlinOptions {
-    jvmTarget = "1.8"
+    jvmTarget = "11"
 }

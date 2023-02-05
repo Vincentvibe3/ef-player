@@ -33,8 +33,6 @@ class Stream(private val eventListener: EventListener, private val player: Playe
 
     lateinit var track:Track
 
-    val logger: Logger = LoggerFactory.getLogger("ef-streaming")
-
     /**
      * Stop the streaming process
      *
@@ -127,7 +125,7 @@ class Stream(private val eventListener: EventListener, private val player: Playe
                 if (retries==3){
                     throw e
                 }
-                logger.error("Failed to fetch content length from ${track.url} @ $url at attempt $retries")
+                Player.logger.error("Failed to fetch content length from ${track.url} @ $url at attempt $retries")
                 url = track.getStream() ?: ""
             }
             delay(1000)
@@ -144,10 +142,10 @@ class Stream(private val eventListener: EventListener, private val player: Playe
                     fetchOk = true
                     break
                 } catch (e:FailedResponseException){
-                    logger.error("Failed to fetch ${track.url} at attempt $retries")
+                    Player.logger.error("Failed to fetch ${track.url} at attempt $retries")
                     lastException=e
                 } catch (e:StreamFailureException){
-                    logger.error("No bytes received from ${track.url} at attempt $retries")
+                    Player.logger.error("No bytes received from ${track.url} at attempt $retries")
                     lastException=e
                 }
                 delay(1000)
@@ -160,14 +158,14 @@ class Stream(private val eventListener: EventListener, private val player: Playe
                     format = getFormatReader(data)
                     firstRead=false
                 } catch (e: UnsupportedFormatException){
-                    logger.error("${track.url} contains an unsupported format")
+                    Player.logger.error("${track.url} contains an unsupported format")
                     throw e
                 }
             }
             try {
                 format.processNextBlock(data)
             } catch (e: FormatParseException) {
-                logger.error("Failed to parse ${track.url}")
+                Player.logger.error("Failed to parse ${track.url}")
                 throw e
             }
         }
