@@ -1,10 +1,13 @@
 package com.github.Vincentvibe3.efplayer.extractors
 
+import com.github.Vincentvibe3.efplayer.core.Player
 import com.github.Vincentvibe3.efplayer.streaming.RequestFailedException
 import com.github.Vincentvibe3.efplayer.streaming.RequestHandler
 import com.github.Vincentvibe3.efplayer.core.Track
-import org.json.JSONArray
-import org.json.JSONObject
+import com.github.Vincentvibe3.efplayer.extractors.serialization.*
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.json.Json
 import java.io.File
 import java.net.URLDecoder
 import java.nio.charset.Charset
@@ -16,25 +19,36 @@ import java.nio.charset.Charset
  */
 object Youtube: Extractor() {
 
+    @OptIn(ExperimentalSerializationApi::class)
+    private val json = Json {
+        ignoreUnknownKeys=true
+        explicitNulls = false
+    }
+
     private const val INNERTUBE_API_KEY = "AIzaSyAO_FJ2SlqU8Q4STEHLGCilw_Y9_11qcW8"
 
     private suspend fun buildInnertubePostBody(params:HashMap<String, String>):String{
-        val topLevel = JSONObject()
-        val context = JSONObject()
-        val client = JSONObject()
-            .put("clientName", "WEB")
-            .put("clientVersion", getClientVersion())
-        val contentPlaybackContext = JSONObject()
-            .put("signatureTimestamp", params["signatureTimestamp"])
-        val playbackContext = JSONObject()
-            .put("contentPlaybackContext", contentPlaybackContext)
-        context.put("client",client)
-        params.filter { it.key != "signatureTimestamp" }.forEach {
-            topLevel.put(it.key, it.value)
+        val playbackContext = if (params["signatureTimestamp"]!=null){
+            InnertubeRequestBody.PlaybackContext(
+                InnertubeRequestBody.ContentPlaybackContext(
+                    params["signatureTimestamp"]
+                )
+            )
+        } else {
+            null
         }
-        topLevel.put("playbackContext", playbackContext)
-        topLevel.put("context", context)
-        return topLevel.toString()
+        val requestBody = InnertubeRequestBody(
+            InnertubeRequestBody.Context(
+                InnertubeRequestBody.Client("WEB", getClientVersion())
+            ),
+            playbackContext,
+            params["query"],
+            params["params"],
+            params["continuation"],
+            params["browseId"],
+            params["videoId"]
+        )
+        return json.encodeToString(InnertubeRequestBody.serializer(), requestBody)
     }
 
     private suspend fun getClientVersion(): String {
@@ -79,44 +93,36 @@ object Youtube: Extractor() {
     }
 
     override suspend fun getTrack(url: String, loadId: String): Track? {
-        var duration:Long = -1
-        var title: String? = null
-        var author: String? = null
         val idRegex = "http.?:\\/\\/www\\.youtube\\.com\\/watch\\?v=(.*?)(?>&|\$)".toRegex()
         val id = idRegex.find(url)?.groupValues?.first { !it.contains("www.youtube.com") } ?: return null
         val params = hashMapOf("videoId" to id)
         val body = buildInnertubePostBody(params)
         val response = RequestHandler.post("https://www.youtube.com/youtubei/v1/player?key=$INNERTUBE_API_KEY", body)
-        val jsonResponse = JSONObject(response)
-        if (jsonResponse.has("streamingData")){
-            val streamingData = jsonResponse.getJSONObject("streamingData")
-            if (streamingData.has("adaptiveFormats")){
-                val formats = streamingData.getJSONArray("adaptiveFormats")
-                duration = getDuration(formats)
-            }
+        val jsonResponseResult = kotlin.runCatching {
+            json.decodeFromString<YoutubeVideoResponse>(response)
+        }.onFailure {
+            it.printStackTrace()
         }
-        if (jsonResponse.has("videoDetails")){
-            val details = jsonResponse.getJSONObject("videoDetails")
-            title = details.getString("title")
-            author = details.getString("author")
-        }
+        val jsonResponse = jsonResponseResult.getOrNull()?: return null
+        val streamingData = jsonResponse.streamingData
+        val formats = streamingData?.adaptiveFormats
+        val duration = formats?.let { getDuration(it) }?: -1
+        val details = jsonResponse.videoDetails
+        val title = details?.title
+        val author = details?.author
+
         return Track(url, this, title, author, duration, loadId)
     }
 
-    private fun getBestFormatStream(formats: JSONArray, js: String): String? {
+    private fun getBestFormatStream(formats: List<YoutubeVideoResponse.AdaptiveFormat>, js: String): String? {
         var highestBitrate = -1L
         var streamUrl:String? = null
-        for  (index in 0 until formats.length()){
-            val format = formats.getJSONObject(index)
-            val mimeType = format.getString("mimeType")
-            if (mimeType.equals("audio/webm; codecs=\"opus\"")){
-                val bitrate = format.getLong("bitrate")
+        for  (format in formats){
+            val mimeType = format.mimeType
+            if (mimeType == "audio/webm; codecs=\"opus\""){
+                val bitrate = format.bitrate
                 if (highestBitrate<bitrate){
-                    if (format.has("url")){
-                        streamUrl = format.getString("url")
-                    } else {
-                        streamUrl = format.getString("signatureCipher")
-                    }
+                    streamUrl = format.url?: format.signatureCipher
                     highestBitrate = bitrate
                 }
             }
@@ -133,16 +139,15 @@ object Youtube: Extractor() {
         return streamUrl
     }
 
-    private fun getDuration(formats:JSONArray):Long{
+    private fun getDuration(formats:List<YoutubeVideoResponse.AdaptiveFormat>):Long{
         var highestBitrate = -1L
         var duration = -1L
-        for  (index in 0 until formats.length()){
-            val format = formats.getJSONObject(index)
-            val mimeType = format.getString("mimeType")
-            if (mimeType.equals("audio/webm; codecs=\"opus\"")){
-                val bitrate = format.getLong("bitrate")
+        for  (format in formats){
+            val mimeType = format.mimeType
+            if (mimeType == "audio/webm; codecs=\"opus\""){
+                val bitrate = format.bitrate
                 if (highestBitrate<bitrate){
-                    duration = format.getLong("approxDurationMs")
+                    duration = format.approxDurationMs
                     highestBitrate = bitrate
                 }
             }
@@ -259,14 +264,16 @@ object Youtube: Extractor() {
             val params = hashMapOf("videoId" to id, "signatureTimestamp" to sigTimestamp)
             val body = buildInnertubePostBody(params)
             val response = RequestHandler.post("https://www.youtube.com/youtubei/v1/player?key=$INNERTUBE_API_KEY", body)
-            val jsonResponse = JSONObject(response)
-            if (jsonResponse.has("streamingData")){
-                val streamingData = jsonResponse.getJSONObject("streamingData")
-                if (streamingData.has("adaptiveFormats")){
-                    val formats = streamingData.getJSONArray("adaptiveFormats")
-                    return getBestFormatStream(formats, js)
-                }
+            val jsonResponseResult = kotlin.runCatching {
+                json.decodeFromString<YoutubeVideoResponse>(response)
+            }.onFailure {
+                it.printStackTrace()
             }
+            val jsonResponse = jsonResponseResult.getOrNull()?: return null
+            val streamingData = jsonResponse.streamingData
+
+            val formats = streamingData?.adaptiveFormats
+            return formats?.let { getBestFormatStream(it, js) }
         }
         return null
     }
@@ -296,28 +303,60 @@ object Youtube: Extractor() {
         )
         val body = buildInnertubePostBody(params)
         val response = RequestHandler.post("https://www.youtube.com/youtubei/v1/search?key=AIzaSyAO_FJ2SlqU8Q4STEHLGCilw_Y9_11qcW8", body)
-        val jsonResponse = JSONObject(response)
-        val resultCount = jsonResponse.getString("estimatedResults").toLong()
+        val jsonResponseResult = kotlin.runCatching {
+            json.decodeFromString<YoutubeSearchResponse>(response)
+        }.onFailure {
+            it.printStackTrace()
+        }
+        val jsonResponse = jsonResponseResult.getOrNull()?: return null
+        val resultCount = jsonResponse.estimatedResults.toLong()
         if (resultCount>0){
-            val contents = jsonResponse.getJSONObject("contents")
-                .getJSONObject("twoColumnSearchResultsRenderer")
-                .getJSONObject("primaryContents")
-                .getJSONObject("sectionListRenderer")
-                .getJSONArray("contents")
-                .getJSONObject(0)
-                .getJSONObject("itemSectionRenderer")
-                .getJSONArray("contents")
-            for (index in 0 until contents.length()){
-                val result = contents.getJSONObject(index)
-                if (result.has("videoRenderer")){
-                    val resultInfo = result.getJSONObject("videoRenderer")
-                    val id = resultInfo.getString("videoId")
-                    return getTrack("https://www.youtube.com/watch?v=$id", loadId)
-                }
+            val contents = jsonResponse.contents
+                .twoColumnSearchResultsRenderer
+                .primaryContents
+                .sectionListRenderer
+                .contents[0]
+                .itemSectionRenderer
+                ?.contents
+            if (contents != null) {
+                for (result in contents){
+                    if (result.videoRenderer!=null){
+                        val resultInfo = result.videoRenderer
+                        val id = resultInfo.videoId
+                        return getTrack("https://www.youtube.com/watch?v=$id", loadId)
+                    }
 
+                }
             }
         }
         return null
+    }
+
+    private suspend fun parsePlaylistContent(tracks:ArrayList<Track>, loadId: String, contents:List<YoutubePlaylistResponse.PlaylistVideoRendererContent>){
+        for (item in contents){
+            if (item.playlistVideoRenderer!=null) {
+                val entry = item.playlistVideoRenderer
+                val videoId = entry.videoId
+                val title = entry.title
+                    .runs[0]
+                    .text
+                if (title!="[Deleted video]"){
+                    val duration = (entry.lengthSeconds?.toLong() ?: 0) * 1000
+                    val author = entry.shortBylineText
+                        ?.runs?.get(0)
+                        ?.text
+
+                    val videoUrl = "https://www.youtube.com/watch?v=$videoId"
+                    tracks.add(Track(videoUrl, this, title, author, duration, loadId))
+                }
+            } else if (item.continuationItemRenderer!=null) {
+                val token = item.continuationItemRenderer
+                    .continuationEndpoint
+                    .continuationCommand
+                    .token
+                getPlaylistTracksNext(token, tracks, loadId)
+            }
+        }
     }
 
     private suspend fun getPlaylistTracksNext(continuation:String, tracks:ArrayList<Track>, loadId: String){
@@ -326,39 +365,16 @@ object Youtube: Extractor() {
         )
         val body = buildInnertubePostBody(params)
         val response = RequestHandler.post("https://www.youtube.com/youtubei/v1/browse?key=AIzaSyAO_FJ2SlqU8Q4STEHLGCilw_Y9_11qcW8", body)
-        val jsonResponse = JSONObject(response)
-        val contents = jsonResponse.getJSONArray("onResponseReceivedActions")
-            .getJSONObject(0)
-            .getJSONObject("appendContinuationItemsAction")
-            .getJSONArray("continuationItems")
-
-        for (index in 0 until contents.length()){
-            val item = contents.getJSONObject(index)
-            if (item.has("playlistVideoRenderer")) {
-                val entry = item.getJSONObject("playlistVideoRenderer")
-                val videoId = entry.getString("videoId")
-                val title = entry.getJSONObject("title")
-                    .getJSONArray("runs")
-                    .getJSONObject(0)
-                    .getString("text")
-                if (title!="[Deleted video]"){
-                    val duration = entry.getString("lengthSeconds").toLong() * 1000
-                    val author = entry.getJSONObject("shortBylineText")
-                        .getJSONArray("runs")
-                        .getJSONObject(0)
-                        .getString("text")
-
-                    val videoUrl = "https://www.youtube.com/watch?v=$videoId"
-                    tracks.add(Track(videoUrl, this, title, author, duration, loadId))
-                }
-            } else if (item.has("continuationItemRenderer")) {
-                val token = item.getJSONObject("continuationItemRenderer")
-                    .getJSONObject("continuationEndpoint")
-                    .getJSONObject("continuationCommand")
-                    .getString("token")
-                getPlaylistTracksNext(token, tracks, loadId)
-            }
+        val jsonResponseResult = kotlin.runCatching {
+            json.decodeFromString<YoutubePlaylistContinuationResponse>(response)
+        }.onFailure {
+            it.printStackTrace()
         }
+        val jsonResponse = jsonResponseResult.getOrNull()?: return
+        val contents = jsonResponse.onResponseReceivedActions[0]
+            .appendContinuationItemsAction
+            .continuationItems
+        parsePlaylistContent(tracks, loadId, contents)
     }
 
     override suspend fun getPlaylistTracks(url: String, loadId: String): List<Track> {
@@ -371,49 +387,24 @@ object Youtube: Extractor() {
         val body = buildInnertubePostBody(params)
         val tracks = ArrayList<Track>()
         val response = RequestHandler.post("https://www.youtube.com/youtubei/v1/browse?key=AIzaSyAO_FJ2SlqU8Q4STEHLGCilw_Y9_11qcW8", body)
-        val jsonResponse = JSONObject(response)
-        val contents = jsonResponse.getJSONObject("contents")
-            .getJSONObject("twoColumnBrowseResultsRenderer")
-            .getJSONArray("tabs")
-            .getJSONObject(0)
-            .getJSONObject("tabRenderer")
-            .getJSONObject("content")
-            .getJSONObject("sectionListRenderer")
-            .getJSONArray("contents")
-            .getJSONObject(0)
-            .getJSONObject("itemSectionRenderer")
-            .getJSONArray("contents")
-            .getJSONObject(0)
-            .getJSONObject("playlistVideoListRenderer")
-            .getJSONArray("contents")
-
-        for (index in 0 until contents.length()){
-            val item = contents.getJSONObject(index)
-            if (item.has("playlistVideoRenderer")) {
-                val entry = item.getJSONObject("playlistVideoRenderer")
-                val videoId = entry.getString("videoId")
-                val title = entry.getJSONObject("title")
-                    .getJSONArray("runs")
-                    .getJSONObject(0)
-                    .getString("text")
-                if (title!="[Deleted video]"){
-                    val duration = entry.getString("lengthSeconds").toLong() * 1000
-                    val author = entry.getJSONObject("shortBylineText")
-                        .getJSONArray("runs")
-                        .getJSONObject(0)
-                        .getString("text")
-
-                    val videoUrl = "https://www.youtube.com/watch?v=$videoId"
-                    tracks.add(Track(videoUrl, this, title, author, duration, loadId))
-                }
-            } else if (item.has("continuationItemRenderer")) {
-                val token = item.getJSONObject("continuationItemRenderer")
-                    .getJSONObject("continuationEndpoint")
-                    .getJSONObject("continuationCommand")
-                    .getString("token")
-                getPlaylistTracksNext(token, tracks, loadId)
-            }
+        val jsonResponseResult = kotlin.runCatching {
+            json.decodeFromString<YoutubePlaylistResponse>(response)
+        }.onFailure {
+            it.printStackTrace()
         }
+        val jsonResponse = jsonResponseResult.getOrNull()?: return listOf()
+        val contents = jsonResponse.contents
+            .twoColumnBrowseResultsRenderer
+            .tabs[0]
+            .tabRenderer
+            .content
+            .sectionListRenderer
+            .contents[0]
+            .itemSectionRenderer
+            .contents[0]
+            .playlistVideoListRenderer
+            .contents
+        parsePlaylistContent(tracks, loadId, contents)
         return tracks
     }
 

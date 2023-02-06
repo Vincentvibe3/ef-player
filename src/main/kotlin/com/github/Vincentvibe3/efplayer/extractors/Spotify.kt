@@ -1,11 +1,14 @@
 package com.github.Vincentvibe3.efplayer.extractors
 
-import com.github.Vincentvibe3.efplayer.core.Config
+import com.github.Vincentvibe3.efplayer.core.Player
 import com.github.Vincentvibe3.efplayer.core.Track
+import com.github.Vincentvibe3.efplayer.extractors.serialization.SpotifyPlaylistResponse
+import com.github.Vincentvibe3.efplayer.extractors.serialization.SpotifyTokenResponse
+import com.github.Vincentvibe3.efplayer.extractors.serialization.SpotifyTrackResponse
 import com.github.Vincentvibe3.efplayer.streaming.RequestHandler
-import org.json.JSONArray
-import org.json.JSONException
-import org.json.JSONObject
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.json.Json
+import java.lang.IllegalArgumentException
 import java.net.URLEncoder
 import java.nio.charset.Charset
 import java.util.*
@@ -18,29 +21,33 @@ import kotlin.collections.ArrayList
  */
 object Spotify:Extractor() {
 
+    private val json = Json {
+        ignoreUnknownKeys=true
+    }
+
     private suspend fun getNewToken(){
         val requestBody = "grant_type=client_credentials"
-        val authString = Base64.getEncoder().encodeToString("${Config.spotifyClient}:${Config.spotifySecret}".toByteArray())
+        val authString = Base64.getEncoder().encodeToString("${Player.config.spotifyClient}:${Player.config.spotifySecret}".toByteArray())
         val headers = hashMapOf("Authorization" to "Basic $authString", "Content-Type" to "application/x-www-form-urlencoded")
         val response = RequestHandler.post("https://accounts.spotify.com/api/token", requestBody, headers)
         try {
-            val jsonResponse = JSONObject(response)
-            Config.spotifyToken = jsonResponse.getString("access_token")
-            Config.spotifyTokenExpiry = System.currentTimeMillis()/1000+jsonResponse.getLong("expires_in")
-        }catch (e:JSONException){
+            val jsonResponse = json.decodeFromString<SpotifyTokenResponse>(response)
+            Player.config.spotifyToken = jsonResponse.access_token
+            Player.config.spotifyTokenExpiry = System.currentTimeMillis()/1000+jsonResponse.expires_in
+        }catch (e:IllegalArgumentException){
             println(response)
             e.printStackTrace()
         }
 
     }
 
-    suspend fun getToken(): String {
-        if (Config.spotifyToken.isEmpty()){
+    private suspend fun getToken(): String {
+        if (Player.config.spotifyToken.isEmpty()){
             getNewToken()
-        } else if (Config.spotifyTokenExpiry <= System.currentTimeMillis()/1000){
+        } else if (Player.config.spotifyTokenExpiry <= System.currentTimeMillis()/1000){
             getNewToken()
         }
-        return Config.spotifyToken
+        return Player.config.spotifyToken
     }
 
     /**
@@ -77,24 +84,16 @@ object Spotify:Extractor() {
         val token = getToken()
         val headers = hashMapOf("Authorization" to "Bearer $token")
         val response = RequestHandler.get("https://api.spotify.com/v1/tracks/$id", headers)
-        try {
-            val jsonResponse = JSONObject(response)
-            return if (jsonResponse.has("error")){
-                null
-            } else {
-                val artistsList = ArrayList<String>()
-                val artists = jsonResponse.getJSONArray("artists")
-                for (index in 0 until artists.length()){
-                    val artistData = artists.getJSONObject(index)
-                    artistsList.add(artistData.getString("name"))
-                }
-                val artistString = artistsList.joinToString(", ")
-                val title = jsonResponse.getString("name")
-                return Youtube.search("$title $artistString", loadId)
-            }
-        } catch (e:JSONException){
-            e.printStackTrace()
-            return null
+        return try {
+            val jsonResponse = json.decodeFromString<SpotifyTrackResponse>(response)
+            val artistsList = jsonResponse.artists.map { it.name }
+            val artistString = artistsList.joinToString(", ")
+            val title = jsonResponse.name
+            Youtube.search("$title $artistString", loadId)
+
+        } catch (e:IllegalArgumentException){
+            Player.logger.error("Failed to decode track response from: https://api.spotify.com/v1/tracks/$id \n Received $response")
+            null
         }
 
 
@@ -123,19 +122,14 @@ object Spotify:Extractor() {
         }
     }
 
-    private fun parsePlaylistTracks(items: JSONArray, tracks: ArrayList<Track>, loadId: String) {
-        for (index in 0 until items.length()){
-            val track = items.getJSONObject(index).getJSONObject("track")
-            val artistsList = ArrayList<String>()
-            val artists = track.getJSONArray("artists")
-            for (indexArtists in 0 until artists.length()){
-                val artistData = artists.getJSONObject(indexArtists)
-                artistsList.add(artistData.getString("name"))
-            }
+    private fun parsePlaylistTracks(items: List<SpotifyPlaylistResponse.SpotifyPlaylistTrack>, tracks: ArrayList<Track>, loadId: String) {
+        for (element in items){
+            val track = element.track
+            val artistsList = track.artists.map { it.name }
             val artistString = artistsList.joinToString(", ")
-            val title = track.getString("name")
-            val duration = track.getLong("duration_ms")
-            val url = track.getJSONObject("external_urls").getString("spotify")
+            val title = track.name
+            val duration = track.duration_ms
+            val url = track.external_urls.spotify
             tracks.add(Track(url, Spotify, title, artistString, duration, loadId))
         }
     }
@@ -163,24 +157,20 @@ object Spotify:Extractor() {
         while (hasNext){
             val response = RequestHandler.get(endpoint, headers)
             try {
-                val jsonResponse = JSONObject(response)
-                if (jsonResponse.has("error")){
-                    return tracks
+                val jsonResponse = json.decodeFromString<SpotifyPlaylistResponse>(response)
+                val items = jsonResponse.items
+                parsePlaylistTracks(items, tracks, loadId)
+                if (jsonResponse.next==null){
+                    hasNext = false
                 } else {
-                    val items = jsonResponse.getJSONArray("items")
-                    parsePlaylistTracks(items, tracks, loadId)
-                    if (jsonResponse.isNull("next")){
-                        hasNext = false
-                    } else {
-                        endpoint = jsonResponse.getString("next")+
-                            URLEncoder.encode(
-                                "&fields=items(track(artists.name, name, duration_ms, external_urls.spotify)),next",
-                                Charset.defaultCharset()
-                            )
-                    }
+                    endpoint = jsonResponse.next+
+                        URLEncoder.encode(
+                            "&fields=items(track(artists.name, name, duration_ms, external_urls.spotify)),next",
+                            Charset.defaultCharset()
+                        )
                 }
-            } catch (e:JSONException){
-                e.printStackTrace()
+            } catch (e:IllegalArgumentException){
+                Player.logger.error("Failed to serialize a playlist page for $endpoint")
                 break
             }
         }
