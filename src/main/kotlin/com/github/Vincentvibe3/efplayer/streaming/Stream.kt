@@ -11,18 +11,22 @@ import com.github.Vincentvibe3.efplayer.formats.Formats
 import com.github.Vincentvibe3.efplayer.formats.Result
 import com.github.Vincentvibe3.efplayer.formats.webm.streaming.WebmReader
 import kotlinx.coroutines.*
-import okhttp3.OkHttpClient
-import okhttp3.Request
+import okhttp3.*
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.io.IOException
 import java.nio.ByteBuffer
 import java.util.concurrent.LinkedBlockingDeque
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.math.min
 
-class Stream(private val eventListener: EventListener, private val player: Player):Runnable {
+class Stream(private val eventListener: EventListener, private val player: Player) {
 
     private val FORMATS_ID_MAX_BYTES= 4
+
+    companion object {
+        val coroutineScope = CoroutineScope(Dispatchers.Default+SupervisorJob())
+    }
 
     private val data = LinkedBlockingDeque<Byte>()
 
@@ -122,7 +126,7 @@ class Stream(private val eventListener: EventListener, private val player: Playe
                 contentLength=getContentLength(url)
                 break
             } catch (e:StreamFailureException){
-                if (retries==3){
+                if (retries==3) {
                     throw e
                 }
                 Player.logger.error("Failed to fetch content length from ${track.url} @ $url at attempt $retries")
@@ -134,6 +138,10 @@ class Stream(private val eventListener: EventListener, private val player: Playe
         var firstRead=true
         lateinit var format:Format
         while (rangeStart < contentLength) {
+            if (!isRunning()){
+                data.clear()
+                break
+            }
             var lastException:Exception?=null
             var fetchOk = false
             for (retries in 0..3){
@@ -163,6 +171,7 @@ class Stream(private val eventListener: EventListener, private val player: Playe
                 }
             }
             try {
+                println("getting opus")
                 format.processNextBlock(data)
             } catch (e: FormatParseException) {
                 Player.logger.error("Failed to parse ${track.url}")
@@ -196,7 +205,24 @@ class Stream(private val eventListener: EventListener, private val player: Playe
     }
 
     fun startSong() {
-        ThreadManager.executor.execute(this)
+//        ThreadManager.executor.execute(this)
+        isAlive.set(true)
+        coroutineScope.launch {
+            val url = track.getStream()
+            println("got stream $url")
+            if (url != null) {
+                eventListener.onTrackStart(track, player)
+                try{
+                    startStreaming(url)
+                } catch (e:Exception){
+                    eventListener.onTrackError(track)
+                    e.printStackTrace()
+                } finally {
+                    track.trackFullyStreamed = true
+                    stop()
+                }
+            }
+        }
     }
 
     /**
@@ -208,25 +234,25 @@ class Stream(private val eventListener: EventListener, private val player: Playe
      * *Warning* Do not call in the same `Thread` as the [Player] as it will cause the `Thread` to block
      *
      */
-    override fun run() {
-        isAlive.set(true)
-        runBlocking {
-            launch {
-                val url = track.getStream()
-                if (url != null) {
-                    eventListener.onTrackStart(track, player)
-                    try{
-                        startStreaming(url)
-                    } catch (e:Exception){
-                        eventListener.onTrackError(track)
-                        e.printStackTrace()
-                    } finally {
-                        track.trackFullyStreamed = true
-                    }
-                }
-            }
-
-        }
-    }
+//    override fun run() {
+//        isAlive.set(true)
+//        runBlocking {
+//            launch {
+//                val url = track.getStream()
+//                if (url != null) {
+//                    eventListener.onTrackStart(track, player)
+//                    try{
+//                        startStreaming(url)
+//                    } catch (e:Exception){
+//                        eventListener.onTrackError(track)
+//                        e.printStackTrace()
+//                    } finally {
+//                        track.trackFullyStreamed = true
+//                    }
+//                }
+//            }
+//
+//        }
+//    }
 
 }

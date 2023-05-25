@@ -8,7 +8,7 @@ plugins {
 }
 
 group = "com.github.Vincentvibe3"
-version = "1.3.12"
+version = "1.4.0"
 
 repositories {
     mavenCentral()
@@ -27,8 +27,8 @@ tasks.test {
 }
 
 
-tasks.withType<KotlinCompile> {
-    kotlinOptions.jvmTarget = "11"
+kotlin {
+    jvmToolchain(17)
 }
 
 sourceSets {
@@ -104,12 +104,4 @@ tasks.withType<PublishToMavenRepository>{
 tasks.withType<PublishToMavenLocal>{
     dependsOn("sourcesJar")
     dependsOn("javadocJar")
-}
-val compileKotlin: KotlinCompile by tasks
-compileKotlin.kotlinOptions {
-    jvmTarget = "11"
-}
-val compileTestKotlin: KotlinCompile by tasks
-compileTestKotlin.kotlinOptions {
-    jvmTarget = "11"
 }

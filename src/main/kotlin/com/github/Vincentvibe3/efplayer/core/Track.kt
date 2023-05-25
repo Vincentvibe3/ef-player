@@ -30,24 +30,24 @@ class Track(
      * The loaded chunks of audio as [ByteArray]
      *
      */
-    internal val trackChunks = LinkedBlockingQueue<ByteArray>(Player.config.maxOpusChunks)
+    internal val trackChunks = CounterChannel<ByteArray>(Player.config.maxOpusChunks)
     internal var trackFullyStreamed = false
 
 
     /**
      * returns a pair containing a chunk and whether it is the last
      */
-    fun getChunk(): Pair<ByteArray, Boolean> {
+    suspend fun getChunk(): Pair<ByteArray, Boolean> {
         return if (!started){
             started=true
-            Pair(trackChunks.remove(), false)
+            Pair(trackChunks.receive(), false)
         } else {
-            if (trackChunks.size == 1 && trackFullyStreamed){
+            if (trackChunks.size == 1L && trackFullyStreamed){
                 started = false
                 trackFullyStreamed = false
-                Pair(trackChunks.remove(), true)
+                Pair(trackChunks.receive(), true)
             } else {
-                Pair(trackChunks.remove(), false)
+                Pair(trackChunks.receive(), false)
             }
         }
     }

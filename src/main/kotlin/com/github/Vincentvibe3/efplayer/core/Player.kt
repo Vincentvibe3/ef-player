@@ -218,7 +218,9 @@ class Player(val eventListener: EventListener) {
      *
      */
     fun provide(): ByteArray {
-        val chunkInfo = currentTrack!!.getChunk()
+        val chunkInfo = runBlocking {
+             currentTrack!!.getChunk()
+        }
         if (chunkInfo.second){
             eventListener.onTrackDone(currentTrack!!, this, true)
         }

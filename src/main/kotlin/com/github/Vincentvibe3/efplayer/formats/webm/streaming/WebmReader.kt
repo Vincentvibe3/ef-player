@@ -126,7 +126,7 @@ class WebmReader(private val track: Track, override val stream: Stream): Format(
         currentStep = currentBlock
     }
 
-    private fun readCluster(data: LinkedBlockingDeque<Byte>){
+    private suspend fun readCluster(data: LinkedBlockingDeque<Byte>){
         if (data.size<9){
             missingData = true
             return
@@ -177,7 +177,8 @@ class WebmReader(private val track: Track, override val stream: Stream): Format(
                     val lacing = flags.and(0x06).rotateRight(1)
                     val opus = ByteArray(audioData.size-4)
                     System.arraycopy(audioData, 4, opus, 0, opus.size)
-                    track.trackChunks.putToQueue(opus)
+//                    track.trackChunks.putToQueue(opus)
+                    track.trackChunks.send(opus)
                     elementSize.value+elementSize.bytesRead
                 }
                 else -> {

@@ -52,9 +52,9 @@ abstract class Format {
      */
     abstract suspend fun processNextBlock(data: LinkedBlockingDeque<Byte>)
 
-    fun LinkedBlockingQueue<ByteArray>.putToQueue(array:ByteArray){
-        if (stream.isRunning()){
-            this.put(array)
-        }
-    }
+//    fun LinkedBlockingQueue<ByteArray>.putToQueue(array:ByteArray){
+//        if (stream.isRunning()){
+//            this.put(array)
+//        }
+//    }
 }
