@@ -240,10 +240,16 @@ object Youtube: Extractor() {
     }
 
     private suspend fun getPlayer(url:String):String? {
+//        return RequestHandler.get("https://www.youtube.com/s/player/41b8bed0/player_ias.vflset/en_US/base.js")
         val id = url.removePrefix("https://www.youtube.com/watch?v=")
-        val matchpattern = "(?<=<script src=\")(?!.*?www-embed-player\\.js)(.*?/base.js)(?=\" nonce=\")".toRegex()
+        val matchpattern = ".*(?<=<script src=\\\")(.*?/base.js)\\\".*?(?= nonce=\\\")".toRegex()
         val response = RequestHandler.get("https://www.youtube.com/embed/$id")
-        val player = matchpattern.find(response)?.value
+        val matches = matchpattern.find(response)?.groups
+        val player = if (matches.isNullOrEmpty()||matches.size < 2){
+            null
+        } else {
+            matches[1]?.value
+        }
         if (player!=null) {
             return RequestHandler.get("https://www.youtube.com$player")
         }

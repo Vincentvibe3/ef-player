@@ -171,7 +171,6 @@ class Stream(private val eventListener: EventListener, private val player: Playe
                 }
             }
             try {
-                println("getting opus")
                 format.processNextBlock(data)
             } catch (e: FormatParseException) {
                 Player.logger.error("Failed to parse ${track.url}")
@@ -205,11 +204,9 @@ class Stream(private val eventListener: EventListener, private val player: Playe
     }
 
     fun startSong() {
-//        ThreadManager.executor.execute(this)
         isAlive.set(true)
         coroutineScope.launch {
             val url = track.getStream()
-            println("got stream $url")
             if (url != null) {
                 eventListener.onTrackStart(track, player)
                 try{
