@@ -35,7 +35,7 @@ object Spotify:Extractor() {
             Player.config.spotifyToken = jsonResponse.access_token
             Player.config.spotifyTokenExpiry = System.currentTimeMillis()/1000+jsonResponse.expires_in
         }catch (e:IllegalArgumentException){
-            println(response)
+            Player.logger.error(response)
             e.printStackTrace()
         }
 
