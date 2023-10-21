@@ -244,8 +244,6 @@ object Youtube: Extractor() {
     }
 
     private suspend fun getPlayer(url:String):String? {
-//        return RequestHandler.get("https://www.youtube.com/s/player/41b8bed0/player_ias.vflset/en_US/base.js")
-//        val id = url.removePrefix("https://www.youtube.com/watch?v=")
         val id = getId(url)
         val matchpattern = "(?<=jsUrl\\\":\\\")(/s/.*?base\\.js)".toRegex()
         val response = RequestHandler.get("https://www.youtube.com/embed/$id")
@@ -271,8 +269,6 @@ object Youtube: Extractor() {
     }
 
     override suspend fun getStream(url: String, track: Track): String? {
-//        val idRegex = "http.?:\\/\\/www\\.youtube\\.com\\/watch\\?v=(.*?)(?>&|\$)".toRegex()
-//        val id = idRegex.find(url)?.groupValues?.first { !it.contains("www.youtube.com") } ?: return null
         val id = getId(url) ?: return null
         val js = getPlayer(url)
         val sigTimestamp = js?.let { getSignatureTimestamp(it) }
@@ -394,8 +390,6 @@ object Youtube: Extractor() {
     }
 
     override suspend fun getPlaylistTracks(url: String, loadId: String): List<Track> {
-//        val idRegex = "http.?:\\/\\/www\\.youtube\\.com\\/playlist\\?list=(.*?)(?>&|\$)".toRegex()
-//        val id = idRegex.find(url)?.groupValues?.first { !it.contains("www.youtube.com") } ?: return ArrayList()
         val id = getId(url)?: return ArrayList()
         val params = hashMapOf(
             "browseId" to "VL$id",
@@ -416,12 +410,16 @@ object Youtube: Extractor() {
             .tabRenderer
             .content
             .sectionListRenderer
-            .contents[0]
-            .itemSectionRenderer
-            .contents[0]
-            .playlistVideoListRenderer
             .contents
-        parsePlaylistContent(tracks, loadId, contents)
+        val itemSectionRenderer = contents.first{
+            it.itemSectionRenderer != null
+        }.itemSectionRenderer
+        if (itemSectionRenderer!=null) {
+            val playlistTrackData = itemSectionRenderer.contents[0]
+                .playlistVideoListRenderer
+                .contents
+            parsePlaylistContent(tracks, loadId, playlistTrackData)
+        }
         return tracks
     }
 

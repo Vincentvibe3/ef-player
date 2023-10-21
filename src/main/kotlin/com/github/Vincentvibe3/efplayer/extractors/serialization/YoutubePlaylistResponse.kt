@@ -24,7 +24,10 @@ data class YoutubePlaylistResponse(
     data class SectionListRenderer(val contents:List<SectionListRendererContent>)
 
     @Serializable
-    data class SectionListRendererContent(val itemSectionRenderer: ItemSectionRenderer)
+    data class SectionListRendererContent(
+        val itemSectionRenderer: ItemSectionRenderer?,
+        val continuationItemRenderer:ContinuationItemRenderer?
+    )
 
     @Serializable
     data class ItemSectionRenderer(val contents:List<ItemSectionRendererContent>)
