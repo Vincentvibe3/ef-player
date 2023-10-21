@@ -94,7 +94,7 @@ object Youtube: Extractor() {
     private fun getId(url: String): String? {
         val idRegex =
             "https?://(?>(?>www\\.)?(?>youtu\\.be/)|(?>(?>www\\.)?youtube\\.com/(?>(?>watch\\?v=)|(?>playlist\\?list=))?))(.*?)(?=\\?|\$)".toRegex()
-        return idRegex.find(url)?.groupValues?.first { !it.contains("www.youtube.com") }
+        return idRegex.find(url)?.groupValues?.first { !it.contains("youtube.com") && !it.contains("youtu.be") }
     }
 
     override suspend fun getTrack(url: String, loadId: String): Track? {
