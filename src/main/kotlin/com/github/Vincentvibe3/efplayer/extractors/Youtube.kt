@@ -93,7 +93,7 @@ object Youtube: Extractor() {
 
     private fun getId(url: String): String? {
         val idRegex =
-            "https?://(?>(?>www\\.)?(?>youtu\\.be/)|(?>(?>www\\.)?youtube\\.com/(?>(?>watch\\?v=)|(?>playlist\\?list=))?))(.*?)(?=\\?|\$)".toRegex()
+            "https?://(?>(?>www\\.)?(?>youtu\\.be/)|(?>(?>www\\.)?youtube\\.com/(?>(?>watch\\?v=)|(?>playlist\\?list=))?))(.*?)(?=\\?|&.*$|$)".toRegex()
         return idRegex.find(url)?.groupValues?.first { !it.contains("youtube.com") && !it.contains("youtu.be") }
     }
 
