@@ -3,6 +3,7 @@ package com.github.Vincentvibe3.efplayer.core
 import com.github.Vincentvibe3.efplayer.extractors.Extractor
 import com.github.Vincentvibe3.efplayer.extractors.Spotify
 import com.github.Vincentvibe3.efplayer.extractors.Youtube
+import com.github.Vincentvibe3.efplayer.extractors.YoutubeDL
 import com.github.Vincentvibe3.efplayer.streaming.Stream
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.decodeFromString
@@ -79,7 +80,7 @@ class Player(val eventListener: EventListener) {
         if (url.contains("open.spotify.com")){
             return Spotify
         } else {
-            return Youtube
+            return YoutubeDL
         }
     }
 

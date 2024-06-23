@@ -72,7 +72,7 @@ class Stream(private val eventListener: EventListener, private val player: Playe
             if (!response.isSuccessful){
                 response.close()
                 call.cancel()
-                failureReason = "failed request"
+                failureReason = "failed request ${response.code} $url"
             } else {
                 val contentLength = response.headers["Content-Length"]
                 response.close()
