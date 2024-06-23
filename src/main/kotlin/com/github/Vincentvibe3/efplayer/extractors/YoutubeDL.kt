@@ -21,11 +21,14 @@ object YoutubeDL:Extractor() {
         return  tracks
     }
 
+    override suspend fun getUrlType(url: String): URL_TYPE {
+        return Youtube.getUrlType(url)
+    }
+
     override suspend fun getStream(url: String, track: Track): String? {
         val jsonDump = withContext(Dispatchers.IO) {
             ProcessBuilder().command("yt-dlp", "--dump-json", url).start()
         }.inputReader().readText()
-        println(jsonDump)
         val results = json.decodeFromString<YtDlpDumpResult>(jsonDump)
         val best = results.formats.filter {
             it.ext == "webm" && it.acodec == "opus" && it.vcodec == "none"
