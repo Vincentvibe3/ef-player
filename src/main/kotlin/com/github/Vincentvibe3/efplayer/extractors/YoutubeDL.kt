@@ -6,6 +6,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
+import org.slf4j.LoggerFactory
+import java.util.logging.Logger
 
 object YoutubeDL:Extractor() {
 
@@ -26,9 +28,15 @@ object YoutubeDL:Extractor() {
     }
 
     override suspend fun getStream(url: String, track: Track): String? {
-        val jsonDump = withContext(Dispatchers.IO) {
+        val process = withContext(Dispatchers.IO) {
             ProcessBuilder().command("yt-dlp", "--dump-json", url).start()
-        }.inputReader().readText()
+        }
+        val jsonDump = process.inputReader().readText()
+        val errorText = process.errorReader().readText()
+        if (errorText.isNotBlank()) {
+            val logger = LoggerFactory.getLogger(this.javaClass)
+            logger.error(errorText)
+        }
         val results = json.decodeFromString<YtDlpDumpResult>(jsonDump)
         val best = results.formats.filter {
             it.ext == "webm" && it.acodec == "opus" && it.vcodec == "none"
