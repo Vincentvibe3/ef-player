@@ -2,12 +2,13 @@ package com.github.Vincentvibe3.efplayer.extractors
 
 import com.github.Vincentvibe3.efplayer.core.Track
 import com.github.Vincentvibe3.efplayer.extractors.serialization.YtDlpDumpResult
+import com.github.Vincentvibe3.efplayer.extractors.serialization.YtDlpPlaylistDumpResult
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.SerializationException
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import org.slf4j.LoggerFactory
-import java.util.logging.Logger
 
 object YoutubeDL:Extractor() {
 
@@ -16,11 +17,24 @@ object YoutubeDL:Extractor() {
     }
 
     override suspend fun getPlaylistTracks(url: String, loadId: String): List<Track> {
-        val tracks = Youtube.getPlaylistTracks(url, loadId)
-        tracks.forEach {
-            it.extractor = YoutubeDL
+        val process = withContext(Dispatchers.IO) {
+            ProcessBuilder().command("yt-dlp", "--dump-json", "--flat-playlist",url).start()
         }
-        return  tracks
+        val jsonDump = process.inputReader().readLines()
+        val errorText = process.errorReader().readText()
+        if (errorText.isNotBlank()) {
+            val logger = LoggerFactory.getLogger(this.javaClass)
+            logger.error(errorText)
+        }
+        val tracks = jsonDump.mapNotNull {
+            try {
+                val results = json.decodeFromString<YtDlpPlaylistDumpResult>(it)
+                Track(results.original_url, YoutubeDL, results.title, results.channel, results.duration, loadId)
+            } catch (e: SerializationException) {
+                null
+            }
+        }
+        return tracks
     }
 
     override suspend fun getUrlType(url: String): URL_TYPE {
@@ -37,28 +51,55 @@ object YoutubeDL:Extractor() {
             val logger = LoggerFactory.getLogger(this.javaClass)
             logger.error(errorText)
         }
-        val results = json.decodeFromString<YtDlpDumpResult>(jsonDump)
-        val best = results.formats.filter {
-            it.ext == "webm" && it.acodec == "opus" && it.vcodec == "none"
-        }.sortedBy {
-            it.abr
-        }.last()
-        return best.url
+        val best = try {
+            val results = json.decodeFromString<YtDlpDumpResult>(jsonDump)
+            results.formats.filter {
+                it.ext == "webm" && it.acodec == "opus" && it.vcodec == "none"
+            }.sortedBy {
+                it.abr
+            }.lastOrNull()
+        }catch(e:SerializationException) {
+            e.printStackTrace()
+            null
+        }
+        return best?.url
     }
 
     override suspend fun getTrack(url: String, loadId: String): Track? {
-        val track =  Youtube.getTrack(url, loadId)
-        if (track != null) {
-            track.extractor = YoutubeDL
+        val process = withContext(Dispatchers.IO) {
+            ProcessBuilder().command("yt-dlp", "--dump-json", url).start()
         }
-        return track
+        val jsonDump = process.inputReader().readText()
+        val errorText = process.errorReader().readText()
+        if (errorText.isNotBlank()) {
+            val logger = LoggerFactory.getLogger(this.javaClass)
+            logger.error(errorText)
+        }
+        return try {
+            val results = json.decodeFromString<YtDlpDumpResult>(jsonDump)
+            Track(results.original_url, YoutubeDL, results.title, results.channel, results.duration, loadId)
+        } catch (e:SerializationException){
+            e.printStackTrace()
+            null
+        }
     }
 
     override suspend fun search(query: String, loadId: String): Track? {
-        val track = Youtube.search(query, loadId)
-        if (track != null) {
-            track.extractor = YoutubeDL
+        val process = withContext(Dispatchers.IO) {
+            ProcessBuilder().command("yt-dlp", "--dump-json", "ytsearch:$query").start()
         }
-        return track
+        val jsonDump = process.inputReader().readText()
+        val errorText = process.errorReader().readText()
+        if (errorText.isNotBlank()) {
+            val logger = LoggerFactory.getLogger(this.javaClass)
+            logger.error(errorText)
+        }
+        return try {
+            val results = json.decodeFromString<YtDlpDumpResult>(jsonDump)
+            Track(results.original_url, YoutubeDL, results.title, results.channel, results.duration, loadId)
+        } catch (e:SerializationException){
+            e.printStackTrace()
+            null
+        }
     }
 }

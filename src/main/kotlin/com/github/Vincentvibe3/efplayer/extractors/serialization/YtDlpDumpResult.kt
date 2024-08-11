@@ -3,6 +3,10 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class YtDlpDumpResult(
+    val channel: String,
+    val title: String,
+    val original_url:String,
+    val duration: Long,
     val formats: List<YtDlpDumpFormats>
 )
 
@@ -13,4 +17,12 @@ data class YtDlpDumpFormats(
     val ext:String?=null,
     val url:String?=null,
     val abr: Float?=null
+)
+
+@Serializable
+data class YtDlpPlaylistDumpResult(
+    val channel: String,
+    val title: String,
+    val original_url:String,
+    val duration: Long,
 )
